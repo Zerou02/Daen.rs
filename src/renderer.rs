@@ -38,12 +38,19 @@ impl Renderer {
         if (x >= self.width || y >= self.height) {
             return;
         }
+
+        //Wenn die Fälle x < 0 und y < 0 explizit abgefangen werden ist das Endergebnis schöner.
+        //Sonst werden die Punkte einfach auf Null gemappt und erzeugen eine Border.
+
         let index = self.getIndexByPos(x, y) as usize;
         let buf = self.pixelsObj.frame_mut();
+
+        //Bereits durch if x >= self.width || ... abgefangen. 
         if (index >= buf.len()) {
             return;
         }
 
+        //Es reicht nur die Alphawerte durch 255 zu teilen.
         let aR = (((colour & 0xff000000) >> 24) as f64 / 255.0);
         let aG = (((colour & 0x00ff0000) >> 16) as f64 / 255.0);
         let aB = (((colour & 0x0000ff00) >> 8) as f64 / 255.0);
@@ -64,8 +71,10 @@ impl Renderer {
         buf[index + 3] = (cA * 255.0) as u8;
     }
 
+    //ich verstehe warum dim als Point definiert ist. Es ist jedoch unschön, da ein Punkt kein Maß ist.
     pub fn fillSquare(self: &mut Self, leftUpMostPoint: &Point, dim: &Point, colour: u32) {
         let startIndex = self.getIndexByPos(leftUpMostPoint.x, leftUpMostPoint.y);
+        //Leute die erst über y und dann x iterieren sind mir suspekt
         for yi in (leftUpMostPoint.y..(leftUpMostPoint.y + dim.y)) {
             for xi in (leftUpMostPoint.x..(leftUpMostPoint.x + dim.x)) {
                 self.fillPixel(xi, yi, colour)
@@ -74,11 +83,13 @@ impl Renderer {
     }
 
     pub fn getDistanceBetweenPoints(self: &Self, x1: i32, y1: i32, x2: i32, y2: i32) -> f64 {
+        //ist das schneller oder übersichtlicher als ((x2 -x1) as f64).powi(2) + ...
         let cSquared = (x2 as f64 - x1 as f64) * (x2 as f64 - x1 as f64)
             + (y2 as f64 - y1 as f64) * (y2 as f64 - y1 as f64);
         return (cSquared as f64).sqrt();
     }
 
+    //x und y könnten umbenannt werden, um deutlich zu machen, dass es sich um die mitte handelt
     pub fn fillCircle(self: &mut Self, x: i32, y: i32, radius: i32, colour: u32) {
         let startIndex = self.getIndexByPos(x - radius, y - radius);
         // prevent overflow
@@ -130,6 +141,9 @@ impl Renderer {
         }
     }
 
+    //Ich mag es nicht!
+    //Die Fokuspunkte (könnten auch entsprechend benannt werdeb) und distance ist eine sehr ungewöhnliche Weise um Ellipsen zu definieren, 
+    //üblich sind die Halbachsen a und b.
     pub fn fillEllipsis(
         self: &mut Self,
         point1: &Point,
@@ -143,6 +157,9 @@ impl Renderer {
         let maxY = point1.y.max(point2.y);
 
         let epsilon = 0.8;
+
+        //Massive Ineffizienz
+        //extremCoordinate - distance ist viel größer als benötigt. Wenn man die Halbachsen hätte wäre ein Rechteck der Größe a * b völlig ausreichend
         for yi in ((minY - distance).max(0)..=(maxY + distance).min(self.height)) {
             for xi in ((minX - distance).max(0)..=(maxX + distance).min(self.width)) {
                 let point = Point { x: xi, y: yi };
@@ -153,10 +170,12 @@ impl Renderer {
         }
     }
 
+    //Beim Kreis heißt distance üblicherweise radius
     pub fn drawCircle(self: &mut Self, point: &Point, distance: i32, colour: u32) {
         self.drawEllipsis(point, point, distance, colour);
     }
 
+    //Ich möchte mich erneut über ditance beschweren
     pub fn drawEllipsis(
         self: &mut Self,
         point1: &Point,
@@ -171,9 +190,11 @@ impl Renderer {
 
         let mut leftmostPoint = Point { x: 0, y: 0 };
 
+        //Würde man die Ellipse über center, a, b definieren, wäre der linkeste Punkt center.x - a
         //findLeftmostPoint
         for x in (0..=minX) {
             let point = Point { x, y: minY };
+            //== mit floats ist immer eine schlechte Idee
             if ((point1.distanceTo(&point) + point2.distanceTo(&point)) == distance as f64) {
                 leftmostPoint = Point { x, y: minY };
             }
@@ -209,6 +230,7 @@ impl Renderer {
             [-1, 1],
         ];
         let mut goneFullEllipsis = false;
+        //Verdammt ineffizient!!
         while !goneFullEllipsis {
             let mut distVec: Vec<f64> = Vec::with_capacity(3);
             //checkAllIndices

@@ -62,9 +62,12 @@ fn main() -> Result<(), Error> {
         if let Event::RedrawRequested(_) = event {
             world.renderer.clearBuf(getColourVal(ColourType::BLACK));
             let start1 = getTime();
+
+            //Unschön. Wenn schon beides in einer Welt lebt, warum hat dann die Welt keine draw Funktion, die den Loop übernimmt
             for obj in &world.objects {
                 obj.draw(&mut world.renderer)
             }
+
             world.objects[0].moveObj(2, 2);
             let mut c = world.objects[1].getColour() + 1;
             world.objects[1].setColour(c);
@@ -75,6 +78,8 @@ fn main() -> Result<(), Error> {
                 getColourVal(ColourType::GREEN),
             );
             let end1 = getTime();
+
+            //Unschön. Warum hat die welt keinen Wrapper um das Pixels object?
             world.renderer.pixelsObj.render().unwrap();
             /*         println!(
                 "clear:{};;;draw:{};;;;render:{}",
