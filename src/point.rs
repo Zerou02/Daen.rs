@@ -6,6 +6,7 @@ pub struct Point {
 
 impl Point {
     pub fn distanceTo(self: &Self, point: &Point) -> f64 {
+        //abs kann man sich sparen. Das kommt automatisch durchs quadrieren
         let cSquared = (point.x as f64 - self.x as f64).abs()
             * (point.x as f64 - self.x as f64).abs()
             + (point.y as f64 - self.y as f64).abs() * (point.y as f64 - self.y as f64).abs();
