@@ -1,8 +1,10 @@
-use crate::renderer::Renderer;
+use crate::{colours::Colour, renderer::Renderer};
 
 pub trait GameObj {
     fn draw(&self, renderer: &mut Renderer);
-    fn moveObj(&mut self, x: i32, y: i32);
-    fn getColour(&mut self) -> u32;
-    fn setColour(&mut self, colour: u32);
+    fn moveObj(&mut self, x: f64, y: f64);
+    fn getColour(&mut self) -> &mut Colour;
+    fn setColour(&mut self, colour: Colour);
+    fn rotate(&mut self, deg: f64);
+    fn setRotation(&mut self, deg: f64);
 }

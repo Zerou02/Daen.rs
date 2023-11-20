@@ -10,16 +10,21 @@
 mod circle;
 mod colours;
 mod constants;
+mod ellipsis;
 mod gameObj;
+mod line;
 mod point;
 mod renderer;
 mod square;
 mod utils;
 mod world;
 
+use std::f64::consts::PI;
+
 use circle::Circle;
-use colours::{getColourVal, ColourType};
+use colours::{getColourVal, Colour, ColourType};
 use constants::{HEIGHT, WIDTH};
+use line::Line;
 use point::Point;
 use renderer::Renderer;
 use square::Square;
@@ -32,6 +37,9 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use world::World;
+
+use crate::ellipsis::Ellipsis;
+use crate::gameObj::GameObj;
 
 fn main() -> Result<(), Error> {
     let event_loop = EventLoop::new();
@@ -52,29 +60,69 @@ fn main() -> Result<(), Error> {
         Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture)?
     };
 
+    let mut c = Colour::new();
+    let baseColour = c.createRandHSVA();
+    println!("SET");
+    baseColour.setHSVA([170, 255, 255, 255]);
     let renderer = Renderer::new(pixels, HEIGHT, WIDTH);
-    let square = Square::new(0, 0, 200, 200, getColourVal(ColourType::BLUE));
-    let circle = Circle::new(100, 100, 10, getColourVal(ColourType::BLUE));
-    let mut world = World::new(renderer, vec![Box::new(square), Box::new(circle)]);
+    let square = Square::new(0.0, 0.0, 200.0, 200.0, baseColour.clone());
+    let circle = Circle::new(100.0, 100.0, 10.0, baseColour.clone());
+    let ellipsis = Ellipsis::new(
+        Point { x: 205.0, y: 300.0 },
+        Point { x: 400.0, y: 300.0 },
+        500.0,
+        baseColour.clone(),
+    );
+    let line = Line::new(
+        Point { x: 200.0, y: 300.0 },
+        Point { x: 400.0, y: 301.0 },
+        baseColour.clone(),
+    );
+    let line2 = Line::new(
+        Point { x: 501.0, y: 100.0 },
+        Point { x: 500.0, y: 200.0 },
+        baseColour.clone(),
+    );
+    let mut world = World::new(
+        renderer,
+        vec![
+            //     Box::new(square),
+            //      Box::new(circle),
+            Box::new(line),
+            Box::new(ellipsis),
+            //       Box::new(line2),
+        ],
+    );
 
+    let mut rot = 0.0;
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
-            world.renderer.clearBuf(getColourVal(ColourType::BLACK));
             let start1 = getTime();
-            for obj in &world.objects {
-                obj.draw(&mut world.renderer)
-            }
-            world.objects[0].moveObj(2, 2);
-            let mut c = world.objects[1].getColour() + 1;
-            world.objects[1].setColour(c);
-            world.renderer.drawEllipsis(
-                &Point { x: 200, y: 400 },
-                &Point { x: 400, y: 400 },
+            world.renderer.clearBuf(getColourVal(ColourType::BLACK));
+            world.objects[0].getColour().increaseHSVA(1);
+            world.objects[0].rotate(0.01);
+            world.objects[1].getColour().increaseHSVA(1);
+            world.objects[1].rotate(0.1);
+            //println!("{:?}", world.objects[0].getColour());
+            //world.objects[0].moveObj(2, 2);
+            // let c = world.objects[1].getColour() + 1;
+            //world.objects[1].setColour(c);
+            /*            world.renderer.drawEllipsis(
+                &Point { x: 200.0, y: 400.0 },
+                &Point { x: 400.0, y: 400.0 },
                 500,
                 getColourVal(ColourType::GREEN),
-            );
-            let end1 = getTime();
+            ); */
+            world.drawAll();
+            rot += 0.1;
+            /*    world.renderer.drawEllipsis2(
+                &Point { x: 300.0, y: 300.0 },
+                300,
+                10,
+                Colour::new().createRandHSVA().rgba,
+                rot,
+            ); */
             world.renderer.pixelsObj.render().unwrap();
             /*         println!(
                 "clear:{};;;draw:{};;;;render:{}",
@@ -82,6 +130,8 @@ fn main() -> Result<(), Error> {
                 end2 - start1,
                 end3 - start3
             ); */
+            let end1 = getTime();
+            // println!("Time:{}", end1 - start1);
         }
 
         // Handle input events

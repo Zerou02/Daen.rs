@@ -1,14 +1,14 @@
-use crate::{gameObj::GameObj, point::Point};
+use crate::{colours::Colour, gameObj::GameObj, point::Point};
 
 pub struct Circle {
     centre: Point,
-    r: i32,
-    colour: u32,
+    r: f64,
+    colour: Colour,
     filled: bool,
 }
 
 impl Circle {
-    pub fn new(x: i32, y: i32, r: i32, colour: u32) -> Circle {
+    pub fn new(x: f64, y: f64, r: f64, colour: Colour) -> Circle {
         return Circle {
             centre: Point { x, y },
             r,
@@ -21,22 +21,29 @@ impl Circle {
 impl GameObj for Circle {
     fn draw(&self, renderer: &mut crate::renderer::Renderer) {
         if self.filled {
-            renderer.fillCircle(self.centre.x, self.centre.y, self.r, self.colour);
+            renderer.fillCircle(&self.centre, self.r as i32, self.colour.rgba);
         } else {
-            renderer.drawCircle(&self.centre, self.r, self.colour)
+            renderer.drawCircle(&self.centre, self.r as i32, self.colour.rgba)
         }
     }
-    fn moveObj(self: &mut Self, x: i32, y: i32) {
+    fn moveObj(self: &mut Self, x: f64, y: f64) {
         self.centre.x += x;
         self.centre.y += y;
     }
 
-    fn rotate(self: &mut Self, deg: f64) {}
-    fn getColour(&mut self) -> u32 {
-        return self.colour;
+    fn getColour(&mut self) -> &mut Colour {
+        return &mut self.colour;
     }
 
-    fn setColour(&mut self, colour: u32) {
+    fn setColour(&mut self, colour: Colour) {
         self.colour = colour;
+    }
+
+    fn rotate(&mut self, deg: f64) {
+        todo!()
+    }
+
+    fn setRotation(&mut self, deg: f64) {
+        todo!()
     }
 }

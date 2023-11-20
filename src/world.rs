@@ -12,4 +12,9 @@ impl World {
     pub fn addObj(self: &mut Self, object: Box<dyn GameObj>) {
         self.objects.push(object)
     }
+    pub fn drawAll(&mut self) {
+        for i in &mut self.objects {
+            i.draw(&mut self.renderer);
+        }
+    }
 }

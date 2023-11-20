@@ -1,13 +1,13 @@
-use crate::{gameObj::GameObj, point::Point, renderer::Renderer};
+use crate::{colours::Colour, gameObj::GameObj, point::Point, renderer::Renderer};
 
 pub struct Square {
     pivot: Point,
     dim: Point,
-    colour: u32,
+    colour: Colour,
 }
 
 impl Square {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, colour: u32) -> Square {
+    pub fn new(x: f64, y: f64, w: f64, h: f64, colour: Colour) -> Square {
         return Square {
             pivot: Point { x, y },
             dim: Point { x: w, y: h },
@@ -18,18 +18,26 @@ impl Square {
 
 impl GameObj for Square {
     fn draw(&self, renderer: &mut Renderer) {
-        renderer.fillSquare(&self.pivot, &self.dim, self.colour);
+        renderer.fillSquare(&self.pivot, &self.dim, self.colour.rgba);
     }
-    fn moveObj(self: &mut Self, x: i32, y: i32) {
+    fn moveObj(self: &mut Self, x: f64, y: f64) {
         self.pivot.x += x;
         self.pivot.y += y;
     }
 
-    fn getColour(&mut self) -> u32 {
-        return self.colour;
+    fn getColour(&mut self) -> &mut Colour {
+        return &mut self.colour;
     }
 
-    fn setColour(&mut self, colour: u32) {
+    fn setColour(&mut self, colour: Colour) {
         self.colour = colour;
+    }
+
+    fn rotate(&mut self, deg: f64) {
+        todo!()
+    }
+
+    fn setRotation(&mut self, deg: f64) {
+        todo!()
     }
 }
