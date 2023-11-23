@@ -52,17 +52,25 @@ impl GameObj for Line {
     }
 
     fn rotate(&mut self, rad: f64) {
-        let pivot = Point {
-            x: (self.p2.x + self.p1.x) / 2.0,
-            y: (self.p2.y + self.p1.y) / 2.0,
-        };
-        let newPoint1 = rotatePoint(&self.p1, rad, &pivot);
-        let newPoint2 = rotatePoint(&self.p2, rad, &pivot);
+        self.rotation += rad;
+        self.rotation %= 360.0;
+        let newPoint1 = rotatePoint(&self.p1, rad, &self.centre);
+        let newPoint2 = rotatePoint(&self.p2, rad, &self.centre);
         self.p1 = newPoint1;
         self.p2 = newPoint2;
     }
 
-    fn setRotation(&mut self, deg: f64) {
-        self.rotate(deg - self.rotation);
+    fn setRotation(&mut self, rad: f64) {
+        self.rotate(-self.rotation);
+        //        let base1 = rotatePoint(&self.p1, -self.rotation, &self.centre);
+        //      let base2 = rotatePoint(&self.p2, -self.rotation, &self.centre);
+        self.rotation = rad;
+        //    let new1 = rotatePoint(&base1, -self.rotation, &self.centre);
+        //  let new2 = rotatePoint(&base2, -self.rotation, &self.centre);
+        self.rotate(self.rotation);
+    }
+
+    fn setFilled(&mut self, val: bool) {
+        todo!()
     }
 }

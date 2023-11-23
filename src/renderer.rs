@@ -2,7 +2,10 @@ use std::cmp::Ordering;
 
 use pixels::Pixels;
 
-use crate::{point::Point, utils::rotatePoint};
+use crate::{
+    point::{self, Point},
+    utils::rotatePoint,
+};
 
 pub type rgbColour = [u8; 4];
 pub struct Renderer {
@@ -44,7 +47,7 @@ impl Renderer {
         self.fillPixelF(p2.x, p2.y, colour);
     }
     pub fn fillPixelF(self: &mut Self, x: f64, y: f64, colour: rgbColour) {
-        self.fillPixel(x.round() as i32, y.round() as i32, colour)
+        self.fillPixel(x as i32, y as i32, colour)
     }
 
     pub fn fillPixel(self: &mut Self, x: i32, y: i32, colour: rgbColour) {
@@ -74,22 +77,63 @@ impl Renderer {
         buf[index + 3] = (cA * 255.0) as u8;
     }
 
-    pub fn fillSquare(self: &mut Self, leftUpMostPoint: &Point, dim: &Point, colour: rgbColour) {
-        let startIndex = self.getIndexByPosF(leftUpMostPoint.x, leftUpMostPoint.y);
+    /**
+     * @param points: Beginning at upper left, then clockwise
+     */
+    pub fn drawSquare(&mut self, points: &[Point; 4], colour: rgbColour) {
+        self.drawLine(&points[0], &points[1], colour);
+        self.drawLine(&points[1], &points[2], colour);
+        self.drawLine(&points[2], &points[3], colour);
+        self.drawLine(&points[3], &points[0], colour);
+    }
+
+    /**
+     * @param points: Beginning at upper left, then clockwise
+     */
+    pub fn fillSquare(self: &mut Self, points: &[Point; 4], colour: rgbColour) {
+        self.fillTriangle(&points[0], &points[1], &points[2], colour);
+        self.fillTriangle(&points[0], &points[2], &points[3], colour);
+        /*         let startIndex = self.getIndexByPosF(leftUpMostPoint.x, leftUpMostPoint.y);
         for yi in (leftUpMostPoint.y as i32..(leftUpMostPoint.y + dim.y) as i32) {
             for xi in (leftUpMostPoint.x as i32..(leftUpMostPoint.x + dim.x) as i32) {
                 self.fillPixel(xi, yi, colour)
             }
+        } */
+    }
+
+    pub fn drawTriangle(&mut self, p1: &Point, p2: &Point, p3: &Point, colour: rgbColour) {
+        self.drawLine(p1, p2, colour);
+        self.drawLine(p1, p3, colour);
+        self.drawLine(p2, p3, colour);
+    }
+
+    pub fn fillTriangle(&mut self, p1: &Point, p2: &Point, p3: &Point, colour: rgbColour) {
+        let mut xSorted = [p1.x as i32, p2.x as i32, p3.x as i32];
+        let mut ySorted = [p1.y as i32, p2.y as i32, p3.y as i32];
+        xSorted.sort();
+        ySorted.sort();
+        let xa = p1.x as i32;
+        let xb = p2.x as i32;
+        let xc = p3.x as i32;
+        let ya = p1.y as i32;
+        let yb = p2.y as i32;
+        let yc = p3.y as i32;
+        for x in xSorted[0]..=xSorted[2] {
+            for y in ySorted[0]..=ySorted[2] {
+                let deltaABC = (xa * (yb - yc) + xb * (yc - ya) + xc * (ya - yb)).abs();
+                let deltaABCP =
+                    (xa * (yb - y) + xb * (yc - ya) + xc * (y - yb) + x * (ya - yc)).abs();
+                let deltaABPC =
+                    (xa * (yb - yc) + xb * (y - ya) + x * (yc - yb) + xc * (ya - y)).abs();
+                let deltaAPBC =
+                    (xa * (y - yc) + x * (yb - ya) + xb * (yc - y) + xc * (ya - yb)).abs();
+                if (deltaABCP.max(deltaABPC).max(deltaAPBC) - deltaABC < 0) {
+                    self.fillPixel(x, y, colour);
+                }
+            }
         }
     }
 
-    pub fn fillSquareFill(
-        &mut self,
-        leftUpMostPoint: &Point,
-        dim: &Point,
-        gradient: Vec<rgbColour>,
-    ) {
-    }
     pub fn getDistanceBetweenPoints(self: &Self, x1: i32, y1: i32, x2: i32, y2: i32) -> f64 {
         let cSquared = (x2 as f64 - x1 as f64) * (x2 as f64 - x1 as f64)
             + (y2 as f64 - y1 as f64) * (y2 as f64 - y1 as f64);
@@ -175,28 +219,18 @@ impl Renderer {
         distance: i32,
         colour: rgbColour,
     ) {
-        let minX = point1.x.min(point2.x) as i32;
-        let minY = if (minX == point1.x as i32) {
-            point1.y
-        } else {
-            point2.y
-        };
-        let maxX = point1.x.max(point2.x) as i32;
-        let maxY = if (maxX == point1.x as i32) {
-            point1.y
-        } else {
-            point2.y
-        };
+        let ordererdPoints = point1.orderedPoints(&point2);
+        let minX = ordererdPoints.0.x as i32;
+        let minY = ordererdPoints.0.y as i32;
+        let maxX = ordererdPoints.1.x as i32;
+        let maxY = ordererdPoints.1.y as i32;
 
         let mut leftmostPoint: Point;
-
         let mut resultVec: Vec<f64> = vec![];
+
         //findLeftmostPoint
         for x in (0..=minX) {
-            let point = Point {
-                x: x as f64,
-                y: minY as f64,
-            };
+            let point = Point::newI(x, minY);
             resultVec.push(
                 (((point.distanceTo(point1) + point.distanceTo(point2)) - distance as f64).abs()),
             );
@@ -209,19 +243,9 @@ impl Renderer {
                 index = i;
             }
         }
-        leftmostPoint = Point {
-            x: index as f64,
-            y: minY,
-        };
-
-        let originalPoint = Point {
-            x: leftmostPoint.x,
-            y: leftmostPoint.y,
-        };
-        let mut lastEntry = Point {
-            x: leftmostPoint.x,
-            y: leftmostPoint.y,
-        };
+        leftmostPoint = Point::newI(index as i32, minY);
+        let originalPoint = leftmostPoint.clone();
+        let mut lastEntry = leftmostPoint.clone();
         let directionMap = [
             [-1, 0],
             [-1, -1],
@@ -233,14 +257,12 @@ impl Renderer {
             [-1, 1],
         ];
         let mut goneFullEllipsis = false;
+
         while !goneFullEllipsis {
             let mut distVec: Vec<f64> = Vec::with_capacity(3);
             //checkAllIndices
             for x in directionMap {
-                let p = Point {
-                    x: leftmostPoint.x + x[0] as f64,
-                    y: leftmostPoint.y + x[1] as f64,
-                };
+                let p = Point::new(leftmostPoint.x + x[0] as f64, leftmostPoint.y + x[1] as f64);
                 distVec
                     .push(((p.distanceTo(point1) + p.distanceTo(point2)) - distance as f64).abs());
             }
@@ -256,19 +278,10 @@ impl Renderer {
                     index = i;
                 }
             }
-            lastEntry = Point {
-                x: leftmostPoint.x,
-                y: leftmostPoint.y,
-            };
-
-            leftmostPoint = Point {
-                x: leftmostPoint.x + directionMap[index][0] as f64,
-                y: leftmostPoint.y + directionMap[index][1] as f64,
-            };
+            lastEntry = leftmostPoint.clone();
+            leftmostPoint.movePoint(directionMap[index][0] as f64, directionMap[index][1] as f64);
             self.fillPixelF(leftmostPoint.x, leftmostPoint.y, colour);
-            if (leftmostPoint.x as i32 == originalPoint.x as i32
-                && leftmostPoint.y as i32 == originalPoint.y as i32)
-            {
+            if (leftmostPoint.equalTo(&originalPoint)) {
                 goneFullEllipsis = true;
             }
         }

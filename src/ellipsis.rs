@@ -67,4 +67,8 @@ impl GameObj for Ellipsis {
     fn setRotation(&mut self, deg: f64) {
         todo!()
     }
+
+    fn setFilled(&mut self, val: bool) {
+        self.filled = val;
+    }
 }

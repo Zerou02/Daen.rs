@@ -46,4 +46,8 @@ impl GameObj for Circle {
     fn setRotation(&mut self, deg: f64) {
         todo!()
     }
+
+    fn setFilled(&mut self, val: bool) {
+        todo!()
+    }
 }

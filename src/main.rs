@@ -16,6 +16,7 @@ mod line;
 mod point;
 mod renderer;
 mod square;
+mod triangle;
 mod utils;
 mod world;
 
@@ -40,6 +41,7 @@ use world::World;
 
 use crate::ellipsis::Ellipsis;
 use crate::gameObj::GameObj;
+use crate::triangle::Triangle;
 
 fn main() -> Result<(), Error> {
     let event_loop = EventLoop::new();
@@ -65,14 +67,22 @@ fn main() -> Result<(), Error> {
     println!("SET");
     baseColour.setHSVA([170, 255, 255, 255]);
     let renderer = Renderer::new(pixels, HEIGHT, WIDTH);
-    let square = Square::new(0.0, 0.0, 200.0, 200.0, baseColour.clone());
+    let mut square = Square::new(Point::newI(150, 150), 200.0, 200.0, baseColour.clone());
+    square.setFilled(true);
     let circle = Circle::new(100.0, 100.0, 10.0, baseColour.clone());
-    let ellipsis = Ellipsis::new(
+    let triangle = Triangle::new(
+        Point::newI(400, 400),
+        Point::newI(300, 500),
+        Point::newI(500, 500),
+        baseColour.clone(),
+    );
+    let mut ellipsis = Ellipsis::new(
         Point { x: 205.0, y: 300.0 },
         Point { x: 400.0, y: 300.0 },
         500.0,
         baseColour.clone(),
     );
+    //   ellipsis.setFilled(true);
     let line = Line::new(
         Point { x: 200.0, y: 300.0 },
         Point { x: 400.0, y: 301.0 },
@@ -86,11 +96,11 @@ fn main() -> Result<(), Error> {
     let mut world = World::new(
         renderer,
         vec![
-            //     Box::new(square),
             //      Box::new(circle),
             Box::new(line),
             Box::new(ellipsis),
-            //       Box::new(line2),
+            Box::new(square),
+            Box::new(triangle), //       Box::new(line2),
         ],
     );
 
@@ -99,39 +109,21 @@ fn main() -> Result<(), Error> {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
             let start1 = getTime();
-            world.renderer.clearBuf(getColourVal(ColourType::BLACK));
+            //world.renderer.clearBuf(getColourVal(ColourType::BLACK));
             world.objects[0].getColour().increaseHSVA(1);
             world.objects[0].rotate(0.01);
+            //world.objects[0].setRotation(PI);
             world.objects[1].getColour().increaseHSVA(1);
-            world.objects[1].rotate(0.1);
-            //println!("{:?}", world.objects[0].getColour());
-            //world.objects[0].moveObj(2, 2);
-            // let c = world.objects[1].getColour() + 1;
-            //world.objects[1].setColour(c);
-            /*            world.renderer.drawEllipsis(
-                &Point { x: 200.0, y: 400.0 },
-                &Point { x: 400.0, y: 400.0 },
-                500,
-                getColourVal(ColourType::GREEN),
-            ); */
-            world.drawAll();
-            rot += 0.1;
-            /*    world.renderer.drawEllipsis2(
-                &Point { x: 300.0, y: 300.0 },
-                300,
-                10,
-                Colour::new().createRandHSVA().rgba,
-                rot,
-            ); */
+            world.objects[1].rotate(0.01);
+
+            world.objects[2].getColour().increaseHSVA(1);
+            world.objects[2].rotate(0.01);
+
+            world.objects[3].rotate(0.01);
+            world.drawAllAtIndex(2);
             world.renderer.pixelsObj.render().unwrap();
-            /*         println!(
-                "clear:{};;;draw:{};;;;render:{}",
-                end1 - start1,
-                end2 - start1,
-                end3 - start3
-            ); */
             let end1 = getTime();
-            // println!("Time:{}", end1 - start1);
+            //println!("Time:{}", end1 - start1);
         }
 
         // Handle input events
