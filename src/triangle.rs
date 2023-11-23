@@ -1,82 +1,77 @@
-use crate::{colours::Colour, gameObj::GameObj, point::Point, utils::rotatePoint};
+use crate::{
+    colours::Colour,
+    gameObj::{GameObj, IGameObj},
+    point::Point,
+    utils::rotatePoint,
+};
 
 pub struct Triangle {
-    points: [Point; 3],
-    centre: Point,
-    colour: Colour,
-    rotation: f64,
-    filled: bool,
+    gameObj: GameObj,
 }
 
 impl Triangle {
     pub fn new(p1: Point, p2: Point, p3: Point, colour: Colour) -> Triangle {
         let mut retVal = Triangle {
-            points: [p1, p2, p3],
-            centre: Point::newI(0, 0),
-            colour,
-            rotation: 0.0,
-            filled: false,
+            gameObj: GameObj {
+                colour,
+                points: vec![p1, p2, p3],
+                centre: Point::newI(0, 0),
+                rotation: 0.0,
+                filled: false,
+                id: 0,
+            },
         };
         retVal.calculateCentrePoint();
         return retVal;
     }
 
     pub fn calculateCentrePoint(&mut self) {
-        let p1p2 = self.points[0].centreTo(&self.points[1]);
-        let p1p3 = self.points[0].centreTo(&self.points[2]);
-        self.centre = p1p2.centreTo(&p1p3);
+        let p1p2 = self.gameObj.points[0].centreTo(&self.gameObj.points[1]);
+        let p1p3 = self.gameObj.points[0].centreTo(&self.gameObj.points[2]);
+        self.gameObj.centre = p1p2.centreTo(&p1p3);
     }
 }
 
-impl GameObj for Triangle {
+impl IGameObj for Triangle {
     fn draw(&self, renderer: &mut crate::renderer::Renderer) {
-        if (self.filled) {
+        if (self.gameObj.filled) {
             renderer.drawTriangle(
-                &self.points[0],
-                &self.points[1],
-                &self.points[2],
-                self.colour.rgba,
+                &self.gameObj.points[0],
+                &self.gameObj.points[1],
+                &self.gameObj.points[2],
+                self.gameObj.colour.rgba,
             );
         } else {
             renderer.fillTriangle(
-                &self.points[0],
-                &self.points[1],
-                &self.points[2],
-                self.colour.rgba,
+                &self.gameObj.points[0],
+                &self.gameObj.points[1],
+                &self.gameObj.points[2],
+                self.gameObj.colour.rgba,
             )
         }
     }
 
     fn moveObj(&mut self, x: f64, y: f64) {
-        for mut p in self.points {
-            p.x += x;
-            p.y += y;
-        }
+        self.gameObj.moveObj(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {
-        return &mut self.colour;
+        return self.gameObj.getColour();
     }
 
     fn setColour(&mut self, colour: Colour) {
-        self.colour = colour;
+        self.gameObj.setColour(colour);
     }
 
     fn rotate(&mut self, rad: f64) {
-        self.rotation += rad;
-        let np = Point::newI(0, 0);
-        let mut newPoints: [Point; 3] = [np, np, np];
-        for i in 0..newPoints.len() {
-            newPoints[i] = rotatePoint(&self.points[i], rad, &self.centre);
-        }
-        self.points = newPoints;
+        self.gameObj.rotate(rad)
     }
 
     fn setRotation(&mut self, rad: f64) {
-        todo!()
+        self.gameObj.setRotation(rad)
     }
 
     fn setFilled(&mut self, val: bool) {
-        self.filled = val;
+        self.gameObj.setFilled(val);
     }
 }

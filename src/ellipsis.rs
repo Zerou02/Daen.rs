@@ -1,74 +1,70 @@
-use crate::{colours::Colour, gameObj::GameObj, point::Point, utils::rotatePoint};
+use crate::{
+    colours::Colour,
+    gameObj::{GameObj, IGameObj},
+    point::Point,
+    utils::rotatePoint,
+};
 
 pub struct Ellipsis {
-    leftFocalPoint: Point,
-    rightFocalPoint: Point,
-    colour: Colour,
+    gameObj: GameObj,
     distance: f64,
-    filled: bool,
 }
 
 impl Ellipsis {
     pub fn new(p1: Point, p2: Point, distance: f64, colour: Colour) -> Ellipsis {
         return Ellipsis {
-            leftFocalPoint: p1,
-            rightFocalPoint: p2,
-            colour,
+            gameObj: GameObj {
+                rotation: 0.0,
+                centre: p1.centreTo(&p2),
+                colour,
+                points: vec![p1, p2],
+                filled: false,
+                id: 0,
+            },
             distance,
-            filled: false,
         };
     }
 }
 
-impl GameObj for Ellipsis {
+impl IGameObj for Ellipsis {
     fn draw(&self, renderer: &mut crate::renderer::Renderer) {
-        if self.filled {
+        if self.gameObj.filled {
             renderer.fillEllipsis(
-                &self.leftFocalPoint,
-                &self.rightFocalPoint,
+                &self.gameObj.points[0],
+                &self.gameObj.points[1],
                 self.distance as i32,
-                self.colour.rgba,
+                self.gameObj.colour.rgba,
             );
         } else {
             renderer.drawEllipsis(
-                &self.leftFocalPoint,
-                &self.rightFocalPoint,
+                &self.gameObj.points[0],
+                &self.gameObj.points[1],
                 self.distance as i32,
-                self.colour.rgba,
+                self.gameObj.colour.rgba,
             )
         }
     }
     fn moveObj(self: &mut Self, x: f64, y: f64) {
-        self.leftFocalPoint.x += x;
-        self.rightFocalPoint.x += x;
-        self.leftFocalPoint.y += y;
-        self.rightFocalPoint.y += y;
+        self.gameObj.moveObj(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {
-        return &mut self.colour;
+        return self.gameObj.getColour();
     }
 
     fn setColour(&mut self, colour: Colour) {
-        self.colour = colour;
+        self.gameObj.setColour(colour);
     }
 
     fn rotate(&mut self, rad: f64) {
-        let pivot = Point {
-            x: (self.rightFocalPoint.x + self.leftFocalPoint.x) / 2.0,
-            y: (self.rightFocalPoint.y + self.leftFocalPoint.y) / 2.0,
-        };
-        let newPoint1 = rotatePoint(&self.leftFocalPoint, rad, &pivot);
-        let newPoint2 = rotatePoint(&self.rightFocalPoint, rad, &pivot);
-        self.leftFocalPoint = newPoint1;
-        self.rightFocalPoint = newPoint2;
+        self.gameObj.rotate(rad);
     }
 
-    fn setRotation(&mut self, deg: f64) {
-        todo!()
+    fn setRotation(&mut self, rad: f64) {
+        self.gameObj.setRotation(rad);
     }
 
     fn setFilled(&mut self, val: bool) {
-        self.filled = val;
+        self.gameObj.setFilled(val);
     }
 }

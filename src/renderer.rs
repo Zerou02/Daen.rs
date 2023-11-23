@@ -80,7 +80,7 @@ impl Renderer {
     /**
      * @param points: Beginning at upper left, then clockwise
      */
-    pub fn drawSquare(&mut self, points: &[Point; 4], colour: rgbColour) {
+    pub fn drawSquare(&mut self, points: &Vec<Point>, colour: rgbColour) {
         self.drawLine(&points[0], &points[1], colour);
         self.drawLine(&points[1], &points[2], colour);
         self.drawLine(&points[2], &points[3], colour);
@@ -90,7 +90,7 @@ impl Renderer {
     /**
      * @param points: Beginning at upper left, then clockwise
      */
-    pub fn fillSquare(self: &mut Self, points: &[Point; 4], colour: rgbColour) {
+    pub fn fillSquare(self: &mut Self, points: &Vec<Point>, colour: rgbColour) {
         self.fillTriangle(&points[0], &points[1], &points[2], colour);
         self.fillTriangle(&points[0], &points[2], &points[3], colour);
         /*         let startIndex = self.getIndexByPosF(leftUpMostPoint.x, leftUpMostPoint.y);

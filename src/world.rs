@@ -1,20 +1,28 @@
-use crate::{gameObj::GameObj, renderer::Renderer, utils::getTime};
+use crate::{
+    gameObj::{GameObj, IGameObj},
+    gameObjectManager::GameObjManager,
+    renderer::Renderer,
+    utils::getTime,
+};
 
 pub struct World {
     pub renderer: Renderer,
-    pub objects: Vec<Box<dyn GameObj>>,
+    pub objectManager: GameObjManager,
 }
 
 impl World {
-    pub fn new(renderer: Renderer, objects: Vec<Box<dyn GameObj>>) -> World {
-        World { renderer, objects }
+    pub fn new(renderer: Renderer) -> World {
+        World {
+            renderer,
+            objectManager: GameObjManager::new(),
+        }
     }
-    pub fn addObj(self: &mut Self, object: Box<dyn GameObj>) {
-        self.objects.push(object)
+    pub fn addObj(self: &mut Self, object: Box<dyn IGameObj>) {
+        self.objectManager.addGameObj(object);
     }
     pub fn drawAll(&mut self) {
         let start1 = getTime();
-        for i in &mut self.objects {
+        for i in self.objectManager.gameObj {
             i.draw(&mut self.renderer);
         }
         let end1 = getTime();
@@ -22,9 +30,9 @@ impl World {
     }
     pub fn drawAllAtIndex(&mut self, index: usize) {
         let start1 = getTime();
-        for i in 0..self.objects.len() {
+        for i in 0..self.objectManager.gameObj.len() {
             if i >= index {
-                self.objects[i].draw(&mut self.renderer);
+                self.objectManager.gameObj[i].draw(&mut self.renderer);
             }
         }
         let end1 = getTime();

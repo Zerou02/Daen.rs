@@ -12,6 +12,7 @@ mod colours;
 mod constants;
 mod ellipsis;
 mod gameObj;
+mod gameObjectManager;
 mod line;
 mod point;
 mod renderer;
@@ -40,7 +41,7 @@ use winit_input_helper::WinitInputHelper;
 use world::World;
 
 use crate::ellipsis::Ellipsis;
-use crate::gameObj::GameObj;
+use crate::gameObj::{GameObj, IGameObj};
 use crate::triangle::Triangle;
 
 fn main() -> Result<(), Error> {
@@ -93,16 +94,11 @@ fn main() -> Result<(), Error> {
         Point { x: 500.0, y: 200.0 },
         baseColour.clone(),
     );
-    let mut world = World::new(
-        renderer,
-        vec![
-            //      Box::new(circle),
-            Box::new(line),
-            Box::new(ellipsis),
-            Box::new(square),
-            Box::new(triangle), //       Box::new(line2),
-        ],
-    );
+    let mut world = World::new(renderer);
+    world.objectManager.addGameObj(Box::new(triangle));
+    world.objectManager.addGameObj(Box::new(ellipsis));
+    world.objectManager.addGameObj(Box::new(line));
+    world.objectManager.addGameObj(Box::new(line2));
 
     let mut rot = 0.0;
     event_loop.run(move |event, _, control_flow| {
