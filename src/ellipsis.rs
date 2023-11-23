@@ -11,7 +11,7 @@ pub struct Ellipsis {
 }
 
 impl Ellipsis {
-    pub fn new(p1: Point, p2: Point, distance: f64, colour: Colour) -> Ellipsis {
+    pub fn new(p1: Point, p2: Point, distance: f64, colour: Colour, id: u64) -> Ellipsis {
         return Ellipsis {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -19,7 +19,7 @@ impl Ellipsis {
                 colour,
                 points: vec![p1, p2],
                 filled: false,
-                id: 0,
+                id,
             },
             distance,
         };
@@ -44,8 +44,8 @@ impl IGameObj for Ellipsis {
             )
         }
     }
-    fn moveObj(self: &mut Self, x: f64, y: f64) {
-        self.gameObj.moveObj(x, y);
+    fn moveI(self: &mut Self, x: i64, y: i64) {
+        self.gameObj.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {

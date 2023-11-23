@@ -10,7 +10,7 @@ pub struct Triangle {
 }
 
 impl Triangle {
-    pub fn new(p1: Point, p2: Point, p3: Point, colour: Colour) -> Triangle {
+    pub fn new(p1: Point, p2: Point, p3: Point, colour: Colour, id: u64) -> Triangle {
         let mut retVal = Triangle {
             gameObj: GameObj {
                 colour,
@@ -18,7 +18,7 @@ impl Triangle {
                 centre: Point::newI(0, 0),
                 rotation: 0.0,
                 filled: false,
-                id: 0,
+                id,
             },
         };
         retVal.calculateCentrePoint();
@@ -51,8 +51,8 @@ impl IGameObj for Triangle {
         }
     }
 
-    fn moveObj(&mut self, x: f64, y: f64) {
-        self.gameObj.moveObj(x, y);
+    fn moveI(self: &mut Self, x: i64, y: i64) {
+        self.gameObj.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {

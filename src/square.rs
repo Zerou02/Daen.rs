@@ -15,7 +15,7 @@ pub struct Square {
 }
 
 impl Square {
-    pub fn new(p: Point, w: f64, h: f64, colour: Colour) -> Square {
+    pub fn new(p: Point, w: f64, h: f64, colour: Colour, id: u64) -> Square {
         let mut retS = Square {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -28,7 +28,7 @@ impl Square {
                     Point::new(p.x, p.y + h),
                 ],
                 filled: false,
-                id: 0,
+                id,
             },
         };
         let centrePoint = retS.gameObj.points[0].centreTo(&retS.gameObj.points[3]);
@@ -46,8 +46,8 @@ impl IGameObj for Square {
         }
     }
 
-    fn moveObj(self: &mut Self, x: f64, y: f64) {
-        self.gameObj.moveObj(x, y);
+    fn moveI(self: &mut Self, x: i64, y: i64) {
+        self.gameObj.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {

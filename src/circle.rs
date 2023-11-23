@@ -10,15 +10,15 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(x: f64, y: f64, r: f64, colour: Colour) -> Circle {
+    pub fn new(x: f64, y: f64, r: f64, colour: Colour, id: u64) -> Circle {
         return Circle {
             gameObj: GameObj {
                 rotation: 0.0,
                 centre: Point::new(x, y),
                 colour,
                 points: vec![],
-                filled: false,
-                id: 0,
+                filled: true,
+                id,
             },
             r,
         };
@@ -41,8 +41,8 @@ impl IGameObj for Circle {
             )
         }
     }
-    fn moveObj(self: &mut Self, x: f64, y: f64) {
-        self.moveObj(x, y);
+    fn moveI(self: &mut Self, x: i64, y: i64) {
+        self.gameObj.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {

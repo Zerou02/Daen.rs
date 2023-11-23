@@ -44,8 +44,8 @@ impl IGameObj for Line {
         )
     }
 
-    fn moveObj(&mut self, x: f64, y: f64) {
-        self.gameObj.moveObj(x, y);
+    fn moveI(self: &mut Self, x: i64, y: i64) {
+        self.gameObj.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {

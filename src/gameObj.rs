@@ -12,10 +12,10 @@ pub struct GameObj {
 }
 
 impl GameObj {
-    pub fn moveObj(&mut self, x: f64, y: f64) {
+    pub fn moveI(self: &mut Self, x: i64, y: i64) {
         for p in &mut self.points {
-            p.x += x;
-            p.y += y;
+            p.x += x as f64;
+            p.y += y as f64;
         }
     }
 
@@ -48,7 +48,7 @@ impl GameObj {
 
 pub trait IGameObj {
     fn draw(&self, renderer: &mut Renderer);
-    fn moveObj(&mut self, x: f64, y: f64);
+    fn moveI(&mut self, x: i64, y: i64);
     fn getColour(&mut self) -> &mut Colour;
     fn setColour(&mut self, colour: Colour);
     fn rotate(&mut self, rad: f64);

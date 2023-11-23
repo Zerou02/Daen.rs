@@ -74,7 +74,7 @@ impl Colour {
         return self;
     }
 
-    pub fn increaseHSVA(&mut self, val: u32) -> &mut Colour {
+    pub fn increaseHSVA(&mut self, val: u32) -> &mut Self {
         let mut newH = self.hsva[0] as u32 + val;
         while newH > 255 {
             newH -= 255;

@@ -22,7 +22,7 @@ impl World {
     }
     pub fn drawAll(&mut self) {
         let start1 = getTime();
-        for i in self.objectManager.gameObj {
+        for i in &self.objectManager.gameObj {
             i.draw(&mut self.renderer);
         }
         let end1 = getTime();
