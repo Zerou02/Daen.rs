@@ -20,7 +20,7 @@ pub fn getColourVal(colourType: ColourType) -> u32 {
     };
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Colour {
     pub rgba: [u8; 4],
     pub hsva: [u8; 4],
@@ -33,19 +33,21 @@ impl Colour {
             hsva: [0, 0, 0, 0],
         };
     }
-    pub fn createRandHSVA(&mut self) -> &mut Colour {
+    pub fn createRandHSVA(mut self) -> Colour {
         let rng = thread_rng();
         let h = thread_rng().gen_range(0..=255);
         let s = thread_rng().gen_range(0..=255);
         let v = thread_rng().gen_range(0..=255);
         let a = thread_rng().gen_range(0..255);
         self.hsva = [h, s, v, a];
-        return self.convertHSVAToRGBA();
+        self.convertHSVAToRGBA();
+        return self;
     }
 
-    pub fn setHSVA(&mut self, val: [u8; 4]) -> &mut Colour {
+    pub fn setHSVA(mut self, val: [u8; 4]) -> Colour {
         self.hsva = val;
-        return self.convertHSVAToRGBA();
+        self.convertHSVAToRGBA();
+        return self;
     }
 
     pub fn convertHSVAToRGBA(&mut self) -> &mut Colour {
@@ -74,10 +76,13 @@ impl Colour {
         return self;
     }
 
-    pub fn increaseHSVA(&mut self, val: u32) -> &mut Self {
-        let mut newH = self.hsva[0] as u32 + val;
+    pub fn increaseHSVA(&mut self, val: i32) -> &mut Self {
+        let mut newH = self.hsva[0] as i32 + val;
         while newH > 255 {
             newH -= 255;
+        }
+        if newH < 0 {
+            newH = 255;
         }
         self.hsva[0] = newH as u8;
         self.convertHSVAToRGBA();

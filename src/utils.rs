@@ -1,3 +1,4 @@
+use crate::constants::HEIGHT;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::point::Point;
@@ -22,4 +23,9 @@ pub fn rotatePoint(point: &Point, rad: f64, pivot: &Point) -> Point {
         x: tmpPoint.x + pivot.x,
         y: tmpPoint.y + pivot.y,
     };
+}
+
+pub fn screenToCartesianY(y: f64) -> f64 {
+    let baseY = HEIGHT as f64;
+    return (baseY - y);
 }

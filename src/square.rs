@@ -1,17 +1,18 @@
 use std::ops::Range;
 
-use winit::platform::x11;
-
 use crate::{
+    collisionBox::CollisionBox,
     colours::Colour,
     gameObj::{GameObj, IGameObj},
     point::Point,
     renderer::Renderer,
     utils::rotatePoint,
+    vector2::Vector2,
 };
 
 pub struct Square {
     gameObj: GameObj,
+    colBox: CollisionBox,
 }
 
 impl Square {
@@ -29,7 +30,14 @@ impl Square {
                 ],
                 filled: false,
                 id,
+                velocity: Vector2::newI(0, 0),
             },
+            colBox: CollisionBox::new(
+                crate::collisionBox::CollisionBoxTypes::AABB,
+                vec![],
+                vec![],
+                id,
+            ),
         };
         let centrePoint = retS.gameObj.points[0].centreTo(&retS.gameObj.points[3]);
         retS.gameObj.centre = centrePoint;
@@ -68,5 +76,36 @@ impl IGameObj for Square {
 
     fn setFilled(&mut self, val: bool) {
         self.gameObj.setFilled(val)
+    }
+
+    fn setCentre(&mut self, centre: Point) {
+        self.gameObj.centre = centre;
+    }
+
+    fn readyForTrial(&self) -> bool {
+        return self.gameObj.readyForTrial();
+    }
+
+    fn getColBox(&self) -> &CollisionBox {
+        return &self.colBox;
+    }
+    fn getColBoxMut(&mut self) -> &mut CollisionBox {
+        return &mut self.colBox;
+    }
+
+    fn getVelocity(&self) -> Vector2 {
+        return self.gameObj.getVelocity();
+    }
+
+    fn setVelocity(&mut self, v: Vector2) {
+        self.gameObj.setVelocity(v)
+    }
+
+    fn mMove(&mut self) {
+        self.gameObj.mMove();
+    }
+
+    fn getID(&self) -> u64 {
+        return self.gameObj.getId();
     }
 }

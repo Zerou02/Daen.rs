@@ -93,12 +93,6 @@ impl Renderer {
     pub fn fillSquare(self: &mut Self, points: &Vec<Point>, colour: rgbColour) {
         self.fillTriangle(&points[0], &points[1], &points[2], colour);
         self.fillTriangle(&points[0], &points[2], &points[3], colour);
-        /*         let startIndex = self.getIndexByPosF(leftUpMostPoint.x, leftUpMostPoint.y);
-        for yi in (leftUpMostPoint.y as i32..(leftUpMostPoint.y + dim.y) as i32) {
-            for xi in (leftUpMostPoint.x as i32..(leftUpMostPoint.x + dim.x) as i32) {
-                self.fillPixel(xi, yi, colour)
-            }
-        } */
     }
 
     pub fn drawTriangle(&mut self, p1: &Point, p2: &Point, p3: &Point, colour: rgbColour) {

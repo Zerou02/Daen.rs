@@ -1,12 +1,15 @@
 use crate::{
+    collisionBox::CollisionBox,
     colours::Colour,
     gameObj::{GameObj, IGameObj},
     point::Point,
     utils::rotatePoint,
+    vector2::Vector2,
 };
 
 pub struct Triangle {
     gameObj: GameObj,
+    colBox: CollisionBox,
 }
 
 impl Triangle {
@@ -19,7 +22,14 @@ impl Triangle {
                 rotation: 0.0,
                 filled: false,
                 id,
+                velocity: Vector2::newI(0, 0),
             },
+            colBox: CollisionBox::new(
+                crate::collisionBox::CollisionBoxTypes::AABB,
+                vec![],
+                vec![],
+                id,
+            ),
         };
         retVal.calculateCentrePoint();
         return retVal;
@@ -73,5 +83,36 @@ impl IGameObj for Triangle {
 
     fn setFilled(&mut self, val: bool) {
         self.gameObj.setFilled(val);
+    }
+
+    fn setCentre(&mut self, centre: Point) {
+        self.gameObj.centre = centre;
+    }
+
+    fn readyForTrial(&self) -> bool {
+        return self.gameObj.readyForTrial();
+    }
+
+    fn getColBox(&self) -> &CollisionBox {
+        return &self.colBox;
+    }
+    fn getColBoxMut(&mut self) -> &mut CollisionBox {
+        return &mut self.colBox;
+    }
+
+    fn getVelocity(&self) -> Vector2 {
+        return self.gameObj.getVelocity();
+    }
+
+    fn setVelocity(&mut self, v: Vector2) {
+        self.gameObj.setVelocity(v)
+    }
+
+    fn mMove(&mut self) {
+        self.gameObj.mMove();
+    }
+
+    fn getID(&self) -> u64 {
+        return self.gameObj.getId();
     }
 }

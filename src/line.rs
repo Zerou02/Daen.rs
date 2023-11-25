@@ -1,18 +1,21 @@
 use std::{f64::consts::PI, vec};
 
 use crate::{
+    collisionBox::{CollisionBox, CollisionBoxTypes},
     colours::Colour,
     gameObj::{GameObj, IGameObj},
     point::Point,
     utils::rotatePoint,
+    vector2::Vector2,
 };
 
 pub struct Line {
     gameObj: GameObj,
+    colBox: CollisionBox,
 }
 
 impl Line {
-    pub fn new(p1: Point, p2: Point, colour: Colour) -> Line {
+    pub fn new(p1: Point, p2: Point, colour: Colour, id: u64) -> Line {
         let mut retVal = Line {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -20,8 +23,10 @@ impl Line {
                 colour,
                 points: vec![p1, p2],
                 filled: false,
-                id: 0,
+                id,
+                velocity: Vector2::newI(0, 0),
             },
+            colBox: CollisionBox::new(CollisionBoxTypes::Line, vec![p1, p2], vec![], id),
         };
         retVal.gameObj.centre = retVal.calculateCentrePoint();
         return retVal;
@@ -66,5 +71,36 @@ impl IGameObj for Line {
 
     fn setFilled(&mut self, val: bool) {
         self.gameObj.setFilled(val);
+    }
+
+    fn setCentre(&mut self, centre: Point) {
+        self.gameObj.centre = centre;
+    }
+
+    fn readyForTrial(&self) -> bool {
+        return self.gameObj.readyForTrial();
+    }
+
+    fn getColBox(&self) -> &CollisionBox {
+        return &self.colBox;
+    }
+    fn getColBoxMut(&mut self) -> &mut CollisionBox {
+        return &mut self.colBox;
+    }
+
+    fn getVelocity(&self) -> Vector2 {
+        return self.gameObj.getVelocity();
+    }
+
+    fn setVelocity(&mut self, v: Vector2) {
+        self.gameObj.setVelocity(v)
+    }
+
+    fn mMove(&mut self) {
+        self.gameObj.mMove();
+    }
+
+    fn getID(&self) -> u64 {
+        return self.gameObj.getId();
     }
 }

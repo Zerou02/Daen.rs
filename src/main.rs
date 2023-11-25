@@ -8,19 +8,21 @@
     unused_imports
 )]
 mod circle;
+mod collisionBox;
 mod colours;
 mod constants;
 mod ellipsis;
 mod gameObj;
 mod gameObjectManager;
 mod line;
+mod physicsEngine;
 mod point;
 mod renderer;
 mod square;
 mod triangle;
 mod utils;
+mod vector2;
 mod world;
-
 use std::f64::consts::PI;
 
 use circle::Circle;
@@ -33,6 +35,7 @@ use square::Square;
 use utils::getTime;
 
 use pixels::{Error, Pixels, SurfaceTexture};
+use vector2::Vector2;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, VirtualKeyCode};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -40,6 +43,7 @@ use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use world::World;
 
+use crate::collisionBox::CollisionBox;
 use crate::ellipsis::Ellipsis;
 use crate::gameObj::{GameObj, IGameObj};
 use crate::triangle::Triangle;
@@ -65,37 +69,87 @@ fn main() -> Result<(), Error> {
 
     let mut c = Colour::new();
     let baseColour = c.createRandHSVA();
-    println!("SET");
     baseColour.setHSVA([170, 255, 255, 255]);
     let renderer = Renderer::new(pixels, HEIGHT, WIDTH);
 
     let mut world = World::new(renderer);
-    world.objectManager.createSquare(
-        Point::newI(300, 300),
-        Point::newI(100, 100),
-        baseColour.clone(),
-    );
+
+    /*     world.objectManager.createSquare(
+           Point::newI(300, 300),
+           Point::newI(100, 100),
+           baseColour.clone(),
+       );
+    */
+    world
+        .gObjMM()
+        .createCircleS(300, 300, 5.0, baseColour.clone());
     world
         .objectManager
-        .createCircle(Point::newI(300, 300), 40.0, baseColour.clone());
+        .createCircle(Point::newI(300, 220), 5.0, baseColour.clone());
+    world.objectManager.createLine(
+        Point::newI(100, 500),
+        Point::newI(700, 500),
+        baseColour.clone(),
+    );
+    world.objectManager.createLine(
+        Point::newI(100, 100),
+        Point::newI(100, 500),
+        baseColour.clone(),
+    );
 
-    let mut rot = 0.0;
+    world.objectManager.createLine(
+        Point::newI(100, 100),
+        Point::newI(700, 100),
+        baseColour.clone(),
+    );
+    world.objectManager.createLine(
+        Point::newI(700, 100),
+        Point::newI(700, 500),
+        baseColour.clone(),
+    );
+
+    world
+        .objectManager
+        .getGameObj(0)
+        .setVelocity(Vector2::newI(0, 1));
+    world
+        .objectManager
+        .getGameObj(1)
+        .setCentre(Point::newI(350, 300));
+    world
+        .objectManager
+        .getGameObj(1)
+        .setVelocity(Vector2::newI(0, -1));
+
+    world
+        .objectManager
+        .getGameObj(3)
+        .setCentre(Point::newI(350, 300));
+    world
+        .objectManager
+        .getGameObj(2)
+        .setCentre(Point::newI(350, 300));
+
+    for x in 0..100 {
+        world
+            .gObjMM()
+            .createRandCircle((200, 500), (200, 400), (10, 20), (-5, 5), (-5, 5));
+    }
+
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
             let start1 = getTime();
-            //world.renderer.clearBuf(getColourVal(ColourType::BLACK));
+
             world
                 .objectManager
                 .getGameObj(0)
                 .getColour()
-                .increaseHSVA(1);
-            world.objectManager.getGameObj(0).moveI(0, -1);
-            world
-                .objectManager
-                .getGameObj(1)
-                .getColour()
-                .increaseHSVA(1);
+                .increaseHSVA(-1);
+
+            for x in &mut world.objectManager.gameObj {
+                x.getColour().increaseHSVA(1);
+            }
 
             world.drawAll();
             world.renderer.pixelsObj.render().unwrap();
