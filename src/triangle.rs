@@ -21,6 +21,7 @@ impl Triangle {
                 centre: Point::newI(0, 0),
                 rotation: 0.0,
                 filled: false,
+                movesLeft: 0,
                 id,
                 velocity: Vector2::newI(0, 0),
             },
@@ -114,5 +115,13 @@ impl IGameObj for Triangle {
 
     fn getID(&self) -> u64 {
         return self.gameObj.getId();
+    }
+
+    fn getMovesLeft(&self) -> i32 {
+        return self.gameObj.getMovesLeft();
+    }
+
+    fn setMovesLeft(&mut self, val: i32) {
+        self.gameObj.setMovesLeft(val)
     }
 }

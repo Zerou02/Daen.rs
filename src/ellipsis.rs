@@ -25,6 +25,7 @@ impl Ellipsis {
                 filled: false,
                 id,
                 velocity: Vector2::newI(0, 0),
+                movesLeft: 0,
             },
             distance,
             colBox: CollisionBox::new(
@@ -114,5 +115,13 @@ impl IGameObj for Ellipsis {
 
     fn getID(&self) -> u64 {
         return self.gameObj.getId();
+    }
+
+    fn getMovesLeft(&self) -> i32 {
+        return self.gameObj.getMovesLeft();
+    }
+
+    fn setMovesLeft(&mut self, val: i32) {
+        self.gameObj.setMovesLeft(val)
     }
 }

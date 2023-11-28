@@ -30,6 +30,7 @@ impl Square {
                 ],
                 filled: false,
                 id,
+                movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
             },
             colBox: CollisionBox::new(
@@ -107,5 +108,13 @@ impl IGameObj for Square {
 
     fn getID(&self) -> u64 {
         return self.gameObj.getId();
+    }
+
+    fn getMovesLeft(&self) -> i32 {
+        return self.gameObj.getMovesLeft();
+    }
+
+    fn setMovesLeft(&mut self, val: i32) {
+        self.gameObj.setMovesLeft(val)
     }
 }

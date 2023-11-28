@@ -25,20 +25,21 @@ impl World {
         self.objectManager.addGameObj(object);
     }
     pub fn drawAll(&mut self) {
-        //self.clear();
+        self.clear();
 
         let start1 = getTime();
         let mut indicesToRemove: Vec<usize> = vec![];
         self.physicsEngine
             .applyPhysics(&mut self.objectManager.gameObj);
+
         for i in 0..self.objectManager.gameObj.len() {
             let e = &mut self.objectManager.gameObj[i];
-            e.mMove();
             if (e.readyForTrial()) {
                 indicesToRemove.push(i);
             };
             e.draw(&mut self.renderer);
         }
+
         for i in indicesToRemove {
             self.objectManager.gameObj.remove(i);
         }

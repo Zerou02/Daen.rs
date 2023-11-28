@@ -69,7 +69,7 @@ fn main() -> Result<(), Error> {
 
     let mut c = Colour::new();
     let baseColour = c.createRandHSVA();
-    baseColour.setHSVA([170, 255, 255, 255]);
+    baseColour.setHSVA([255, 255, 255, 255]);
     let renderer = Renderer::new(pixels, HEIGHT, WIDTH);
 
     let mut world = World::new(renderer);
@@ -80,76 +80,52 @@ fn main() -> Result<(), Error> {
            baseColour.clone(),
        );
     */
-    world
-        .gObjMM()
-        .createCircleS(300, 300, 5.0, baseColour.clone());
-    world
-        .objectManager
-        .createCircle(Point::newI(300, 220), 5.0, baseColour.clone());
+
     world.objectManager.createLine(
         Point::newI(100, 500),
         Point::newI(700, 500),
-        baseColour.clone(),
+        Colour::createColour(colours::ColourType2::RED),
     );
     world.objectManager.createLine(
         Point::newI(100, 100),
         Point::newI(100, 500),
-        baseColour.clone(),
+        Colour::createColour(colours::ColourType2::RED),
     );
 
     world.objectManager.createLine(
         Point::newI(100, 100),
         Point::newI(700, 100),
-        baseColour.clone(),
+        Colour::createColour(colours::ColourType2::RED),
     );
     world.objectManager.createLine(
         Point::newI(700, 100),
         Point::newI(700, 500),
-        baseColour.clone(),
+        Colour::createColour(colours::ColourType2::RED),
     );
 
+    world.gObjMM().createCircle(
+        Point::newI(300, 300),
+        50.0,
+        Colour::createColour(colours::ColourType2::BLUE),
+    );
     world
         .objectManager
-        .getGameObj(0)
-        .setVelocity(Vector2::newI(0, 1));
-    world
-        .objectManager
-        .getGameObj(1)
-        .setCentre(Point::newI(350, 300));
-    world
-        .objectManager
-        .getGameObj(1)
-        .setVelocity(Vector2::newI(0, -1));
-
-    world
-        .objectManager
-        .getGameObj(3)
-        .setCentre(Point::newI(350, 300));
-    world
-        .objectManager
-        .getGameObj(2)
-        .setCentre(Point::newI(350, 300));
-
-    for x in 0..100 {
+        .getGameObj(5)
+        .setVelocity(Vector2::newI(15, 2));
+    /*     for x in 0..1 {
         world
             .gObjMM()
             .createRandCircle((200, 500), (200, 400), (10, 20), (-5, 5), (-5, 5));
-    }
+    } */
 
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
             let start1 = getTime();
-
-            world
-                .objectManager
-                .getGameObj(0)
-                .getColour()
-                .increaseHSVA(-1);
-
+            /*
             for x in &mut world.objectManager.gameObj {
                 x.getColour().increaseHSVA(1);
-            }
+            } */
 
             world.drawAll();
             world.renderer.pixelsObj.render().unwrap();

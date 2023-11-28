@@ -33,7 +33,7 @@ impl GameObjManager {
         let mut index = 0;
         for i in 0..self.gameObj.len() {
             if self.gameObj[i].getID() == id {
-                index = 1;
+                index = i;
             }
         }
         return &mut self.gameObj[index as usize];

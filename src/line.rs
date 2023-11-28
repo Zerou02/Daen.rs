@@ -24,6 +24,7 @@ impl Line {
                 points: vec![p1, p2],
                 filled: false,
                 id,
+                movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
             },
             colBox: CollisionBox::new(CollisionBoxTypes::Line, vec![p1, p2], vec![], id),
@@ -102,5 +103,13 @@ impl IGameObj for Line {
 
     fn getID(&self) -> u64 {
         return self.gameObj.getId();
+    }
+
+    fn getMovesLeft(&self) -> i32 {
+        return self.gameObj.getMovesLeft();
+    }
+
+    fn setMovesLeft(&mut self, val: i32) {
+        self.gameObj.setMovesLeft(val)
     }
 }

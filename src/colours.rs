@@ -9,6 +9,12 @@ pub enum ColourType {
     BLUE,
 }
 
+pub enum ColourType2 {
+    BLUE,
+    GREEN,
+    RED,
+}
+
 pub fn getColourVal(colourType: ColourType) -> u32 {
     return match colourType {
         ColourType::BLACK => 0x00000000,
@@ -87,5 +93,23 @@ impl Colour {
         self.hsva[0] = newH as u8;
         self.convertHSVAToRGBA();
         return self;
+    }
+
+    pub fn createColour(colourType: ColourType2) -> Colour {
+        let mut hsva: [u8; 4] = [0, 0, 0, 0];
+        match colourType {
+            ColourType2::BLUE => hsva = [(230.0 / 360.0 * 255.0) as u8, 255, 127, 255],
+            ColourType2::GREEN => {
+                hsva = [
+                    (118.0 / 360.0 * 255.0) as u8,
+                    255,
+                    (41.0 / 100.0 * 255.0) as u8,
+                    255,
+                ]
+            }
+            ColourType2::RED => hsva = [255, 255, (41.0 / 100.0 * 255.0) as u8, 255],
+        }
+        let retC = Colour::new().setHSVA(hsva);
+        return retC;
     }
 }

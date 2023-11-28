@@ -3,6 +3,7 @@ use crate::{
     utils::screenToCartesianY,
 };
 
+#[derive(Debug)]
 pub enum CollisionBoxTypes {
     AABB,
     Circle,
