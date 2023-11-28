@@ -16,11 +16,21 @@ impl PhysicsEngine {
     pub fn applyPhysics(&self, gameobjs: &mut Vec<Box<dyn IGameObj>>) {
         for i in 0..gameobjs.len() {
             let vel = gameobjs[i].getVelocity();
-            gameobjs[i].setMovesLeft(vel.x.abs().floor() as i32);
-            let yStep = vel.y / (vel.x).abs();
-            let xStep = if (vel.x < 0.0) { -1.0 } else { 1.0 };
+            let isZeroX = vel.x == 0.0;
+            gameobjs[i].setMovesLeft(if (isZeroX) {
+                vel.y.abs().floor()
+            } else {
+                vel.x.abs().floor()
+            } as i32);
+            let mut yStep = vel.y / (vel.x).abs();
+            let mut xStep = if (vel.x < 0.0) { -1.0 } else { 1.0 };
+            if (isZeroX) {
+                xStep = 0.0;
+                yStep = if (vel.y < 0.0) { -1.0 } else { 1.0 }
+            }
+            println!("{},xStep,{},yStep,{}", isZeroX, xStep, yStep);
             while gameobjs[i].getMovesLeft() > 0 {
-                gameobjs[i].moveF(vel.x, yStep);
+                gameobjs[i].moveF(xStep, yStep);
                 let left = gameobjs[i].getMovesLeft() - 1;
                 gameobjs[i].setMovesLeft(left);
                 let colRetVal = self.doesObjCollide(&gameobjs[i], gameobjs);

@@ -105,13 +105,13 @@ fn main() -> Result<(), Error> {
 
     world.gObjMM().createCircle(
         Point::newI(300, 300),
-        50.0,
+        10.0,
         Colour::createColour(colours::ColourType2::BLUE),
     );
     world
         .objectManager
         .getGameObj(5)
-        .setVelocity(Vector2::newI(15, 2));
+        .setVelocity(Vector2::newI(2, 2));
     /*     for x in 0..1 {
         world
             .gObjMM()
