@@ -119,14 +119,21 @@ fn main() -> Result<(), Error> {
             .createRandCircle((200, 500), (200, 400), (10, 20), (-5, 5), (-5, 5));
     }
     fn test() {
+        //left
         let baseI = Vector2::newI(3, 3);
+        //r
         let velJ = Vector2::newI(-1, -1);
-        let origVelJ = velJ;
-        let origBaseI = baseI;
-        let basesJ = Vector2::newI(-1, 1);
+        //right
+        let baseJ = Vector2::newI(-1, 1);
+        //s
         let velI = Vector2::newI(1, -1);
 
-        let baseI = baseI.subtract(&basesJ);
+        let origBaseI = baseI;
+        let origBaseJ = baseJ;
+        let origVelJ = velJ;
+        let origVelI = velI;
+
+        let baseI = baseI.subtract(&baseJ);
         let velJ = velJ.reverse();
 
         println!("baseI{:?}", baseI);
@@ -170,6 +177,8 @@ fn main() -> Result<(), Error> {
         println!("welli{:?}", velI);
         println!("xCoord{}", origBaseI.x + xGes * origVelJ.x);
         println!("yCoord{}", origBaseI.y + xGes * origVelJ.y);
+        println!("xCoord{}", origBaseJ.x + sGes * origVelI.x);
+        println!("yCoord{}", origBaseJ.y + sGes * origVelI.y);
     }
 
     test();
