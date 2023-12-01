@@ -21,6 +21,7 @@ pub struct GameObj {
     pub id: u64,
     pub velocity: Vector2,
     pub movesLeft: i32,
+    pub mass: f64,
 }
 
 impl GameObj {
@@ -100,6 +101,10 @@ impl GameObj {
     pub fn setMovesLeft(&mut self, val: i32) {
         self.movesLeft = val;
     }
+
+    pub fn getMass(&self) -> f64 {
+        return self.mass;
+    }
 }
 
 pub trait IGameObj {
@@ -123,4 +128,5 @@ pub trait IGameObj {
     fn mMove(&mut self);
     fn getMovesLeft(&self) -> i32;
     fn setMovesLeft(&mut self, val: i32);
+    fn getMass(&self) -> f64;
 }

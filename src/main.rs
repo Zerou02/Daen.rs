@@ -103,21 +103,77 @@ fn main() -> Result<(), Error> {
         Colour::createColour(colours::ColourType2::RED),
     );
 
-    world.gObjMM().createCircle(
+    /*     world.gObjMM().createCircle(
         Point::newI(300, 300),
         10.0,
         Colour::createColour(colours::ColourType2::BLUE),
-    );
-    world
-        .objectManager
-        .getGameObj(5)
-        .setVelocity(Vector2::newI(2, 2));
-    /*     for x in 0..1 {
+    ); */
+    /*     world
+    .objectManager
+    .getGameObj(5)
+    .setVelocity(Vector2::newI(2, 2)); */
+
+    for x in 0..1 {
         world
             .gObjMM()
             .createRandCircle((200, 500), (200, 400), (10, 20), (-5, 5), (-5, 5));
-    } */
+    }
+    fn test() {
+        let baseI = Vector2::newI(3, 3);
+        let velJ = Vector2::newI(-1, -1);
+        let origVelJ = velJ;
+        let origBaseI = baseI;
+        let basesJ = Vector2::newI(-1, 1);
+        let velI = Vector2::newI(1, -1);
 
+        let baseI = baseI.subtract(&basesJ);
+        let velJ = velJ.reverse();
+
+        println!("baseI{:?}", baseI);
+        println!("vel{:?}", velI);
+
+        let bx = baseI.x;
+        let by = baseI.y;
+        let rx = velJ.x;
+        let ry = velJ.y;
+        let sx = velI.x;
+        let sy = velI.y;
+
+        println!("by{}", by);
+        println!("ry{}", ry);
+
+        let bx = bx / rx;
+        let sx = sx / rx;
+        let rx = rx / rx;
+        let by = by / ry;
+        let sy = sy / ry;
+        let ry = ry / ry;
+
+        println!("sy{}", sy);
+        println!("ry{}", ry);
+        println!("by{}", by);
+
+        let s = -sy + sx;
+
+        println!("sx{}", sx);
+
+        println!("s{}", s);
+        let b = bx - by;
+        let b = b / s;
+        let s = s / s;
+
+        let sGes = b;
+        let xGes = bx - s * sx;
+
+        println!("sGes{}", sGes);
+        println!("xGes{}", xGes);
+        println!("welli{:?}", velI);
+        println!("xCoord{}", origBaseI.x + xGes * origVelJ.x);
+        println!("yCoord{}", origBaseI.y + xGes * origVelJ.y);
+    }
+
+    test();
+    println!("angle{}", Vector2::newI(1, 0).angleTo(&Vector2::newI(1, 1)));
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {

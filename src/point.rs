@@ -1,3 +1,5 @@
+use crate::vector2::Vector2;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
     pub x: f64,
@@ -47,5 +49,9 @@ impl Point {
 
     pub fn equalTo(&mut self, p: &Point) -> bool {
         return self.x == p.x && self.y == p.y;
+    }
+
+    pub fn toVec(&self) -> Vector2 {
+        return Vector2::new(self.x, self.y);
     }
 }

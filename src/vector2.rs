@@ -16,10 +16,28 @@ impl Vector2 {
         };
     }
 
+    pub fn getLength(&self) -> f64 {
+        return (self.x * self.x + self.y * self.y).sqrt();
+    }
+
     pub fn reverse(&self) -> Vector2 {
         return Vector2 {
             x: self.x * -1.0,
             y: self.y * -1.0,
         };
+    }
+
+    pub fn scalarProduct(&self, otherVec: &Vector2) -> f64 {
+        return self.x * otherVec.x + self.y * otherVec.y;
+    }
+
+    pub fn angleTo(&self, otherVec: &Vector2) -> f64 {
+        return (self.scalarProduct(otherVec) / (self.getLength() * otherVec.getLength()))
+            .acos()
+            .to_degrees();
+    }
+
+    pub fn subtract(&self, otherVec: &Vector2) -> Vector2 {
+        return Vector2::new(self.x - otherVec.x, self.y - otherVec.y);
     }
 }

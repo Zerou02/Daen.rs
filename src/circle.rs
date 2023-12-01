@@ -26,6 +26,7 @@ impl Circle {
                 points: vec![centre],
                 filled: true,
                 id,
+                mass: r,
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
             },
@@ -121,5 +122,9 @@ impl IGameObj for Circle {
 
     fn setMovesLeft(&mut self, val: i32) {
         self.gameObj.setMovesLeft(val)
+    }
+
+    fn getMass(&self) -> f64 {
+        return self.gameObj.getMass();
     }
 }

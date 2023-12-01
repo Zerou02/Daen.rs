@@ -23,6 +23,7 @@ impl Line {
                 colour,
                 points: vec![p1, p2],
                 filled: false,
+                mass: 9999.9,
                 id,
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
@@ -111,5 +112,9 @@ impl IGameObj for Line {
 
     fn setMovesLeft(&mut self, val: i32) {
         self.gameObj.setMovesLeft(val)
+    }
+
+    fn getMass(&self) -> f64 {
+        return self.gameObj.getMass();
     }
 }

@@ -25,6 +25,7 @@ impl Ellipsis {
                 filled: false,
                 id,
                 velocity: Vector2::newI(0, 0),
+                mass: distance,
                 movesLeft: 0,
             },
             distance,
@@ -123,5 +124,9 @@ impl IGameObj for Ellipsis {
 
     fn setMovesLeft(&mut self, val: i32) {
         self.gameObj.setMovesLeft(val)
+    }
+
+    fn getMass(&self) -> f64 {
+        return self.gameObj.getMass();
     }
 }

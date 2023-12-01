@@ -12,8 +12,8 @@ pub enum CollisionBoxTypes {
 
 pub struct CollisionBox {
     pub colType: CollisionBoxTypes,
-    points: Vec<Point>,
-    values: Vec<f64>,
+    pub points: Vec<Point>,
+    pub values: Vec<f64>,
     id: u64,
     collidedWith: Vec<u64>,
 }

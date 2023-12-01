@@ -30,6 +30,7 @@ impl Square {
                 ],
                 filled: false,
                 id,
+                mass: 123.4,
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
             },
@@ -116,5 +117,9 @@ impl IGameObj for Square {
 
     fn setMovesLeft(&mut self, val: i32) {
         self.gameObj.setMovesLeft(val)
+    }
+
+    fn getMass(&self) -> f64 {
+        return self.gameObj.getMass();
     }
 }

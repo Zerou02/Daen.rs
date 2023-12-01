@@ -28,7 +28,6 @@ impl PhysicsEngine {
                 xStep = 0.0;
                 yStep = if (vel.y < 0.0) { -1.0 } else { 1.0 }
             }
-            println!("{},xStep,{},yStep,{}", isZeroX, xStep, yStep);
             while gameobjs[i].getMovesLeft() > 0 {
                 gameobjs[i].moveF(xStep, yStep);
                 let left = gameobjs[i].getMovesLeft() - 1;
@@ -60,7 +59,53 @@ impl PhysicsEngine {
                                 gameobjs[j].setVelocity(velI);
                             }
                             CollisionBoxTypes::Line => {
-                                gameobjs[i].setVelocity(velI.reverse());
+                                let baseI = gameobjs[i].getColBoxMut().points[0].toVec();
+                                let velI = gameobjs[i].getVelocity();
+                                let basesJ = gameobjs[j].getColBoxMut().points[0].toVec();
+                                let velJ = gameobjs[j].getVelocity();
+
+                                let baseI = baseI.subtract(&basesJ);
+                                let velI = velI.reverse();
+
+                                let bx = baseI.x;
+                                let by = baseI.y;
+                                let rx = velJ.x;
+                                let ry = velJ.y;
+                                let sx = velI.x;
+                                let sy = velI.y;
+
+                                let bx = bx / rx;
+                                let sx = sx / rx;
+                                let rx = rx / rx;
+                                let by = by / ry;
+                                let sy = sy / ry;
+                                let ry = ry / ry;
+
+                                let s = -sy + sx;
+                                let b = bx - by;
+                                let b = b / s;
+                                let s = s / s;
+
+                                let sGes = b;
+                                let xGes = bx - s * sx;
+
+                                /*          let m1 = gameobjs[i].getMass();
+                                let m2 = gameobjs[j].getMass();
+                                let u1 = gameobjs[i].getVelocity();
+                                let u2 = gameobjs[i].getVelocity();
+                                let velJ = gameobjs[j].getVelocity();
+                                let theta = gameobjs[i].getVelocity().angleTo(&Vector2::newI(1, 0));
+                                let velINewX = (2.0 * m1 * u1.x * theta.to_radians().cos()
+                                    - (m1 - m2) * u2.x * (theta.to_radians().cos()))
+                                    / (m1 + m2);
+                                let velINewY = (2.0 * m1 * u1.y * theta.to_radians().cos()
+                                    - (m1 - m2) * u2.y * (theta.to_radians().cos()))
+                                    / (m1 + m2);
+                                println!("theta{}", theta);
+                                println!("theta{}", theta.to_radians());
+                                println!("theta{}", theta.to_radians().cos());
+                                println!("Vec:{}{}", velINewX, velINewY);
+                                gameobjs[i].setVelocity(Vector2::new(velINewX, velINewY)); */
                             }
                         },
                         CollisionBoxTypes::Line => match gameobjs[j].getColBox().colType {

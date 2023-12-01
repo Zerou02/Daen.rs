@@ -23,6 +23,7 @@ impl Triangle {
                 filled: false,
                 movesLeft: 0,
                 id,
+                mass: 0.0,
                 velocity: Vector2::newI(0, 0),
             },
             colBox: CollisionBox::new(
@@ -123,5 +124,9 @@ impl IGameObj for Triangle {
 
     fn setMovesLeft(&mut self, val: i32) {
         self.gameObj.setMovesLeft(val)
+    }
+
+    fn getMass(&self) -> f64 {
+        return self.gameObj.getMass();
     }
 }
