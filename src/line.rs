@@ -53,6 +53,7 @@ impl IGameObj for Line {
 
     fn moveI(self: &mut Self, x: i64, y: i64) {
         self.gameObj.moveI(x, y);
+        self.colBox.moveI(x, y);
     }
 
     fn getColour(&mut self) -> &mut Colour {
@@ -99,7 +100,9 @@ impl IGameObj for Line {
     }
 
     fn mMove(&mut self) {
+        let v = self.gameObj.velocity;
         self.gameObj.mMove();
+        self.colBox.moveF(v.x, v.y);
     }
 
     fn getID(&self) -> u64 {

@@ -54,4 +54,8 @@ impl Point {
     pub fn toVec(&self) -> Vector2 {
         return Vector2::new(self.x, self.y);
     }
+
+    pub fn vecTo(&self, other: Point) -> Vector2 {
+        return Vector2::new(other.x - self.x, other.y - self.y);
+    }
 }

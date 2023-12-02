@@ -1,3 +1,5 @@
+use crate::point::Point;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Vector2 {
     pub x: f64,
@@ -39,5 +41,9 @@ impl Vector2 {
 
     pub fn subtract(&self, otherVec: &Vector2) -> Vector2 {
         return Vector2::new(self.x - otherVec.x, self.y - otherVec.y);
+    }
+
+    pub fn toPoint(&self) -> Point {
+        return Point::new(self.x, self.y);
     }
 }

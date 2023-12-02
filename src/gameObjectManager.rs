@@ -72,7 +72,6 @@ impl GameObjManager {
 
     pub fn createLine(&mut self, p: Point, p2: Point, colour: Colour) {
         self.currentId += 1;
-        println!("ID{}", self.currentId);
         self.addGameObj(Box::new(Line::new(p, p2, colour, self.currentId)));
     }
 
