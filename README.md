@@ -10,3 +10,7 @@ display. Images will follow.
 ## Final goal
 
 Do the bad Apple
+
+## Recommendations
+
+Don't look at the source code. It will cause severe depression. Please
