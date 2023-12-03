@@ -61,7 +61,17 @@ impl PhysicsEngine {
                                 gameobjs[i].setVelocity(velJ);
                                 gameobjs[j].setVelocity(velI);
                             }
-                            CollisionBoxTypes::Line => {}
+                            CollisionBoxTypes::Line => {
+                                let lineBase = &gameobjs[j].getColBox().points[0].toVec();
+                                let lineVec =
+                                    gameobjs[j].getColBox().points[1].toVec().subtract(lineBase);
+                                let newVel = self.handleCollisionLineCircle(
+                                    &mut gameobjs[i],
+                                    lineBase.clone(),
+                                    lineVec,
+                                );
+                                gameobjs[i].setVelocity(newVel);
+                            }
                         },
                         CollisionBoxTypes::Line => match gameobjs[j].getColBox().colType {
                             CollisionBoxTypes::AABB => {}
@@ -104,14 +114,17 @@ impl PhysicsEngine {
         return (collided, id);
     }
 
-    pub fn handleCollisionLineCircle(&self, line: &Box<dyn IGameObj>, circle: &Box<dyn IGameObj>) {
-        let centre = gameobjs[i].getColBoxMut().points[0];
-        let velI = gameobjs[i].getVelocity();
-        let velJ = gameobjs[j].getColBoxMut().points[0]
-            .toVec()
-            .subtract(&gameobjs[j].getColBoxMut().points[1].toVec());
-        let baseI = gameobjs[i].getColBoxMut().points[0].toVec();
-        let baseJ = gameobjs[j].getColBoxMut().points[0].toVec();
+    pub fn handleCollisionLineCircle(
+        &self,
+        circle: &mut Box<dyn IGameObj>,
+        lineBase: Vector2,
+        lineVec: Vector2,
+    ) -> Vector2 {
+        let centre = circle.getColBoxMut().points[0];
+        let velI = circle.getVelocity();
+        let velJ = lineVec;
+        let baseI = circle.getColBoxMut().points[0].toVec();
+        let baseJ = lineBase;
         let bVec = baseJ.subtract(&baseI);
         let mut b = Matrix::new(2, 2);
         b.addVec(0, bVec);
@@ -124,7 +137,6 @@ impl PhysicsEngine {
             baseI.x + velI.x * result.getEntry(0, 0),
             baseI.y + velI.y * result.getEntry(0, 0),
         );
-        let above90 = angle > 90.0;
         let mut normalizedAngle = if (angle) <= 90.0 { angle } else { angle - 90.0 };
         let rotatedFirst = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
         let newVelFirst = sp.vecTo(rotatedFirst);
@@ -137,10 +149,8 @@ impl PhysicsEngine {
         }
         let newRotated = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
         let mut newVel = sp.vecTo(newRotated);
-        println!("newVel{:?}", newVel);
         newVel.normalize();
-        println!("newVelNormal{:?}", newVel);
-        gameobjs[i].setVelocity(newVel);
+        return newVel;
     }
 
     pub fn gaussianElimination(&self, a: &mut Matrix, b: &mut Matrix) -> Matrix {
