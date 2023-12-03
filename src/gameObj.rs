@@ -26,16 +26,16 @@ pub struct GameObj {
 
 impl GameObj {
     pub fn moveI(self: &mut Self, x: i64, y: i64) {
-        for p in &mut self.points {
-            p.x += x as f64;
-            p.y += y as f64;
-        }
-        self.centre.x += x as f64;
-        self.centre.y += y as f64;
+        self.moveF(x as f64, y as f64);
     }
 
     pub fn moveF(&mut self, x: f64, y: f64) {
-        self.moveI(x as i64, y as i64);
+        for p in &mut self.points {
+            p.x += x;
+            p.y += y;
+        }
+        self.centre.x += x;
+        self.centre.y += y;
     }
 
     pub fn rotate(&mut self, rad: f64) {

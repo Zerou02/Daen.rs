@@ -114,7 +114,7 @@ fn main() -> Result<(), Error> {
     world
         .objectManager
         .getGameObj(5)
-        .setVelocity(Vector2::newI(-1, -1));
+        .setVelocity(Vector2::new(1.0, 0.5));
 
     /*     for x in 0..1 {
         world

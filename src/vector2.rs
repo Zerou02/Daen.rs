@@ -46,4 +46,10 @@ impl Vector2 {
     pub fn toPoint(&self) -> Point {
         return Point::new(self.x, self.y);
     }
+
+    pub fn normalize(&mut self) {
+        let isNegative = if (self.x < 0.0) { -1.0 } else { 1.0 };
+        self.y = self.y / self.x * isNegative;
+        self.x = self.x / self.x * isNegative;
+    }
 }

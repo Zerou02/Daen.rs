@@ -112,6 +112,11 @@ impl IGameObj for Circle {
         self.collisonBox.moveF(v.x, v.y);
     }
 
+    fn moveF(&mut self, x: f64, y: f64) {
+        self.gameObj.moveF(x, y);
+        self.collisonBox.moveF(x, y);
+    }
+
     fn getID(&self) -> u64 {
         return self.gameObj.getId();
     }

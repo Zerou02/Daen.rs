@@ -61,57 +61,7 @@ impl PhysicsEngine {
                                 gameobjs[i].setVelocity(velJ);
                                 gameobjs[j].setVelocity(velI);
                             }
-                            CollisionBoxTypes::Line => {
-                                let centre = gameobjs[i].getColBoxMut().points[0];
-                                let velI = gameobjs[i].getVelocity();
-                                let velJ = gameobjs[j].getColBoxMut().points[0]
-                                    .toVec()
-                                    .subtract(&gameobjs[j].getColBoxMut().points[1].toVec());
-                                let baseI = gameobjs[i].getColBoxMut().points[0].toVec();
-                                let baseJ = gameobjs[j].getColBoxMut().points[0].toVec();
-                                let bVec = baseJ.subtract(&baseI);
-                                let mut b = Matrix::new(2, 2);
-                                b.addVec(0, bVec);
-                                let mut matrix = Matrix::new(2, 2);
-                                matrix.addVec(0, velI);
-                                matrix.addVec(1, velJ.reverse());
-                                let angle = velI.angleTo(&velJ);
-                                println!("firstBase{:?}", baseI);
-                                println!("secondBase{:?}", baseJ);
-
-                                println!("firstVec {:?}", velI);
-                                println!("secondVec{:?}", velJ);
-                                let result = self.gaussianElimination(&mut matrix, &mut b);
-                                let sp = Point::new(
-                                    baseI.x + velI.x * result.getEntry(0, 0),
-                                    baseI.y + velI.y * result.getEntry(0, 0),
-                                );
-                                println!("Point1:{:?}", sp);
-                                println!(
-                                    "Point2:{:?}",
-                                    Point::new(
-                                        baseJ.x + velJ.x * result.getEntry(1, 0),
-                                        baseJ.y + velJ.y * result.getEntry(1, 0)
-                                    )
-                                );
-                                let normalizedAngle = if (angle) <= 90.0 {
-                                    180.0 - 2.0 * angle
-                                } else {
-                                    360.0 - 2.0 * angle
-
-                                    //     180.0 - 2.0 * angle
-                                };
-                                let rotated =
-                                    rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
-                                let newVel = sp.vecTo(rotated);
-                                println!("sp{:?}", sp);
-                                println!("centre{:?}", centre);
-
-                                println!("rotated{:?}", rotated);
-                                println!("newVel{:?}", newVel);
-                                gameobjs[i].setVelocity(newVel);
-                                println!("angle{}", angle);
-                            }
+                            CollisionBoxTypes::Line => {}
                         },
                         CollisionBoxTypes::Line => match gameobjs[j].getColBox().colType {
                             CollisionBoxTypes::AABB => {}
@@ -154,81 +104,43 @@ impl PhysicsEngine {
         return (collided, id);
     }
 
-    fn calculateIntersectPoint(
-        &self,
-        baseLeft: Vector2,
-        baseRight: Vector2,
-        vecLeft: Vector2,
-        vecRight: Vector2,
-    ) -> Point {
-        let mut sGes = 0.0;
-        let mut xGes = 0.0;
-        let baseI = baseLeft;
-        let velJ = vecLeft;
-        let baseJ = baseRight;
-        let velI = vecRight;
-
-        println!("baseI{:?}", baseLeft);
-        println!("baseRight{:?}", baseRight);
-        println!("velLeft{:?}", vecLeft);
-        println!("velRight{:?}", vecRight);
-
-        let origBaseI = baseI;
-        let origBaseJ = baseJ;
-        let origVelJ = velJ;
-        let origVelI = velI;
-        let baseI = baseI.subtract(&baseJ);
-        let velJ = velJ.reverse();
-        let bx = baseI.x;
-        let by = baseI.y;
-        let rx = velJ.x;
-        let ry = velJ.y;
-        let sx = velI.x;
-        let sy = velI.y;
-        if (ry == 0.0) {
-            sGes = by;
-            sGes = sGes / sx;
-            xGes = -bx + sy * sx;
-            xGes = xGes / rx;
-        } else if (sy == 0.0) {
-            xGes = by;
-            xGes = xGes / rx;
-            sGes = bx - xGes * rx;
-            sGes = sGes.abs();
-        } else if (sx == 0.0) {
-            xGes = bx;
-            xGes = xGes / rx;
-            sGes = by - xGes * ry;
-            sGes = sGes / sy;
-        } else if (rx == 0.0) {
-            sGes = bx;
-            sGes = sGes.abs();
-            xGes = by - sGes * sy;
-            xGes = xGes.abs();
-        } else {
-            let bx = bx / rx;
-            let sx = sx / rx;
-            let rx = rx / rx;
-            let by = by / ry;
-            let sy = sy / ry;
-            let ry = ry / ry;
-            let s = -sy + sx;
-            let b = bx - by;
-            let b = b / s;
-            let s = s / s;
-            sGes = b;
-            xGes = bx - sGes * sx;
-        }
-        println!("sGes{}", sGes);
-        println!("xGes{}", xGes);
-        println!("xCoord{}", origBaseI.x + xGes * origVelJ.x);
-        println!("yCoord{}", origBaseI.y + xGes * origVelJ.y);
-        println!("xCoord{}", origBaseJ.x + sGes * origVelI.x);
-        println!("yCoord{}", origBaseJ.y + sGes * origVelI.y);
-        return Point::new(
-            origBaseI.x + xGes * origVelJ.x,
-            origBaseI.y + xGes * origVelJ.y,
+    pub fn handleCollisionLineCircle(&self, line: &Box<dyn IGameObj>, circle: &Box<dyn IGameObj>) {
+        let centre = gameobjs[i].getColBoxMut().points[0];
+        let velI = gameobjs[i].getVelocity();
+        let velJ = gameobjs[j].getColBoxMut().points[0]
+            .toVec()
+            .subtract(&gameobjs[j].getColBoxMut().points[1].toVec());
+        let baseI = gameobjs[i].getColBoxMut().points[0].toVec();
+        let baseJ = gameobjs[j].getColBoxMut().points[0].toVec();
+        let bVec = baseJ.subtract(&baseI);
+        let mut b = Matrix::new(2, 2);
+        b.addVec(0, bVec);
+        let mut matrix = Matrix::new(2, 2);
+        matrix.addVec(0, velI);
+        matrix.addVec(1, velJ.reverse());
+        let angle = velI.angleTo(&velJ);
+        let result = self.gaussianElimination(&mut matrix, &mut b);
+        let sp = Point::new(
+            baseI.x + velI.x * result.getEntry(0, 0),
+            baseI.y + velI.y * result.getEntry(0, 0),
         );
+        let above90 = angle > 90.0;
+        let mut normalizedAngle = if (angle) <= 90.0 { angle } else { angle - 90.0 };
+        let rotatedFirst = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
+        let newVelFirst = sp.vecTo(rotatedFirst);
+        let nP = rotatedFirst.toVec().subtract(&baseJ);
+        let isMultiple = (nP.x / velJ.x) * velJ.y == nP.y;
+        if (isMultiple) {
+            normalizedAngle = 2.0 * normalizedAngle + 180.0;
+        } else {
+            normalizedAngle *= 2.0
+        }
+        let newRotated = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
+        let mut newVel = sp.vecTo(newRotated);
+        println!("newVel{:?}", newVel);
+        newVel.normalize();
+        println!("newVelNormal{:?}", newVel);
+        gameobjs[i].setVelocity(newVel);
     }
 
     pub fn gaussianElimination(&self, a: &mut Matrix, b: &mut Matrix) -> Matrix {
