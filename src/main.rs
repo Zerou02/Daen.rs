@@ -50,6 +50,7 @@ use crate::ellipsis::Ellipsis;
 use crate::gameObj::{GameObj, IGameObj};
 use crate::matrix::Matrix;
 use crate::triangle::Triangle;
+use crate::utils::rotatePoint;
 
 fn main() -> Result<(), Error> {
     let event_loop = EventLoop::new();
@@ -107,15 +108,34 @@ fn main() -> Result<(), Error> {
     );
 
     world.gObjMM().createCircle(
-        Point::newI(320, 300),
+        Point::newI(220, 300),
         10.0,
         Colour::createColour(colours::ColourType2::BLUE),
     );
     world
         .objectManager
         .getGameObj(5)
-        .setVelocity(Vector2::new(1.0, 0.5));
+        .setVelocity(Vector2::new(1.0, 1.0));
 
+    /*     world.gObjMM().createCircle(
+        Point::newI(330, 300),
+        10.0,
+        Colour::createColour(colours::ColourType2::BLUE),
+    );
+    world
+        .objectManager
+        .getGameObj(6)
+        .setVelocity(Vector2::new(-1.0, 0.0));
+
+    world.gObjMM().createCircle(
+        Point::newI(330, 200),
+        10.0,
+        Colour::createColour(colours::ColourType2::BLUE),
+    );
+    world
+        .objectManager
+        .getGameObj(7)
+        .setVelocity(Vector2::new(0.0, 1.0)); */
     /*     for x in 0..1 {
         world
             .gObjMM()
@@ -136,6 +156,11 @@ fn main() -> Result<(), Error> {
     b.print();
     gaussianElimination(&mut matrix, &mut b); */
 
+    let rad: f64 = (45.0_f64).to_radians();
+    println!(
+        "{:?}",
+        rotatePoint(&Point::new(1.0, 1.0), 2.0 * rad, &Point::newI(0, 0))
+    );
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {

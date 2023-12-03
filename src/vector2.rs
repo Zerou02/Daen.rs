@@ -48,8 +48,13 @@ impl Vector2 {
     }
 
     pub fn normalize(&mut self) {
-        let isNegative = if (self.x < 0.0) { -1.0 } else { 1.0 };
-        self.y = self.y / self.x * isNegative;
-        self.x = self.x / self.x * isNegative;
+        if (self.x == 0.0) {
+            let isNegative = if (self.y < 0.0) { -1.0 } else { 1.0 };
+            self.y = self.y / self.y * isNegative;
+        } else {
+            let isNegative = if (self.x < 0.0) { -1.0 } else { 1.0 };
+            self.y = self.y / self.x * isNegative;
+            self.x = self.x / self.x * isNegative;
+        }
     }
 }
