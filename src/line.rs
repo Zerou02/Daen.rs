@@ -3,19 +3,27 @@ use std::{f64::consts::PI, vec};
 use crate::{
     collisionBox::{CollisionBox, CollisionBoxTypes},
     colours::Colour,
-    gameObj::{GameObj, IGameObj},
+    gameObj::{BehaviourMap, GameObj, IGameObj},
     point::Point,
     utils::rotatePoint,
     vector2::Vector2,
 };
 
+#[derive(Debug)]
 pub struct Line {
     gameObj: GameObj,
     colBox: CollisionBox,
 }
 
 impl Line {
-    pub fn new(p1: Point, p2: Point, colour: Colour, id: u64) -> Line {
+    pub fn new(
+        p1: Point,
+        p2: Point,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) -> Line {
         let mut retVal = Line {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -24,11 +32,19 @@ impl Line {
                 points: vec![p1, p2],
                 filled: false,
                 mass: 9999.9,
-                id,
+                id: id.clone(),
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
+                behaviourMap: BehaviourMap::new(),
             },
-            colBox: CollisionBox::new(CollisionBoxTypes::Line, vec![p1, p2], vec![], id),
+            colBox: CollisionBox::new(
+                CollisionBoxTypes::Line,
+                vec![p1, p2],
+                vec![],
+                id,
+                colClass,
+                collidesWith,
+            ),
         };
         retVal.gameObj.centre = retVal.calculateCentrePoint();
         return retVal;
@@ -105,7 +121,7 @@ impl IGameObj for Line {
         self.colBox.moveF(v.x, v.y);
     }
 
-    fn getID(&self) -> u64 {
+    fn getID(&self) -> String {
         return self.gameObj.getId();
     }
 
@@ -119,5 +135,11 @@ impl IGameObj for Line {
 
     fn getMass(&self) -> f64 {
         return self.gameObj.getMass();
+    }
+    fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.gameObj.setBehaviourMap(map);
+    }
+    fn applyBehaviour(&mut self) {
+        self.gameObj.applyBehaviour();
     }
 }

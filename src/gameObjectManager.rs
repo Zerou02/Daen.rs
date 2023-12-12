@@ -1,8 +1,16 @@
 use rand::Rng;
+use serde_json::{map::Values, Number, Value};
 
 use crate::{
-    circle::Circle, colours::Colour, gameObj::IGameObj, line::Line, point::Point, square::Square,
-    triangle::Triangle, vector2::Vector2,
+    circle::Circle,
+    colours::Colour,
+    ellipsis::Ellipsis,
+    gameObj::{BehaviourMap, IGameObj},
+    line::Line,
+    point::Point,
+    square::Square,
+    triangle::Triangle,
+    vector2::Vector2,
 };
 
 pub struct GameObjManager {
@@ -29,7 +37,7 @@ impl GameObjManager {
         self.gameObj.push(gameObj);
     }
 
-    pub fn getGameObj(&mut self, id: u64) -> &mut Box<dyn IGameObj> {
+    pub fn getGameObj(&mut self, id: String) -> &mut Box<dyn IGameObj> {
         let mut index = 0;
         for i in 0..self.gameObj.len() {
             if self.gameObj[i].getID() == id {
@@ -39,40 +47,439 @@ impl GameObjManager {
         return &mut self.gameObj[index as usize];
     }
 
-    pub fn createTriangle(&mut self, p1: Point, p2: Point, p3: Point, colour: Colour) {
+    pub fn createTriangle(
+        &mut self,
+        p1: Point,
+        p2: Point,
+        p3: Point,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
         self.currentId += 1;
-        self.addGameObj(Box::new(Triangle::new(p1, p2, p3, colour, self.currentId)));
+        self.addGameObj(Box::new(Triangle::new(
+            p1,
+            p2,
+            p3,
+            colour,
+            id,
+            colClass,
+            collidesWith,
+        )));
     }
 
-    pub fn createSquare(&mut self, p1: Point, dim: Point, colour: Colour) {
+    pub fn createSquare(
+        &mut self,
+        p1: Point,
+        dim: Point,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
         self.currentId += 1;
         self.addGameObj(Box::new(Square::new(
             p1,
             dim.x,
             dim.y,
             colour,
-            self.currentId,
+            id,
+            colClass,
+            collidesWith,
         )));
     }
 
-    pub fn createCircle(&mut self, centre: Point, r: f64, colour: Colour) {
-        self.currentId += 1;
+    pub fn extractNumbers(&self, str: &str) -> Vec<f64> {
+        let mut retVec: Vec<f64> = vec![];
+        for x in str.replace(" ", "").replace("\"", "").split(",") {
+            retVec.push(x.parse::<f64>().unwrap());
+        }
+        return retVec;
+    }
+
+    pub fn removeEscapesSeq(&self, str: &str) -> String {
+        return (str.replace("\"", ""));
+    }
+    pub fn parseConfig(&mut self, config: Vec<Value>) {
+        for x in config {
+            let entryType = &x["type"];
+
+            let vel = match x.get("behaviours") {
+                None => Vector2::newI(0, 0),
+                Some(a) => Vector2::newI(1, 1),
+            };
+            let map = self.parseBehaviours(&x);
+            let mut gameObj: Box<dyn IGameObj> = match x.get("type") {
+                None => panic!("WE need a type to work properly"),
+                Some(t) => match self.removeEscapesSeq(t.as_str().unwrap()).as_str() {
+                    "Circle" => Box::new(self.parseCircleFromJSON(&x)),
+                    "Ellipse" => Box::new(self.parseEllipseFromJSON(&x)),
+                    "Line" => Box::new(self.parseLineFromJSON(&x)),
+                    "Square" => Box::new(self.parseSquareFromJSON(&x)),
+                    "Triangle" => Box::new(self.parseTriangleFromJSON(&x)),
+                    _ => {
+                        println!("{:?}", x.get("type"));
+                        panic!("wwfwefw")
+                    }
+                },
+            };
+            println!("{:?}", gameObj);
+            gameObj.setBehaviourMap(map);
+            self.addGameObj(gameObj);
+            //   println!(self.getGameObj(id))
+        }
+    }
+
+    pub fn parseVec2(&self, str: &Value, key: &str) -> Vector2 {
+        match str.get(key) {
+            None => Vector2::newI(0, 0),
+            Some(a) => {
+                let n = self.extractNumbers(a.as_str().unwrap());
+                Vector2::new(n[0], n[1])
+            }
+        }
+    }
+
+    pub fn parseFloat(&self, str: &Value, key: &str) -> f64 {
+        match str.get(key) {
+            None => 0.0,
+            Some(a) => {
+                let n = self.extractNumbers(a.as_str().unwrap());
+                n[0]
+            }
+        }
+    }
+
+    pub fn parseString(&self, str: &Value, key: &str) -> String {
+        match str.get(key) {
+            None => "".to_owned(),
+            Some(a) => self.removeEscapesSeq(&a.as_str().unwrap()),
+        }
+    }
+
+    pub fn parseStrVec(&self, str: &Value, key: &str) -> Vec<String> {
+        match str.get(key) {
+            None => vec![],
+            Some(a) => {
+                let b = a.clone();
+                let mut retVec: Vec<String> = vec![];
+                for x in b.as_str().unwrap().split(",") {
+                    println!("{}", b);
+                    retVec.push(self.removeEscapesSeq(x));
+                }
+                return retVec;
+            }
+        }
+    }
+
+    pub fn parseColour(&self, str: &Value, key: &str) -> Colour {
+        match str.get(key) {
+            None => Colour::new(),
+            Some(a) => match self.removeEscapesSeq(a.as_str().clone().unwrap()).as_str() {
+                "green" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::GREEN)
+                }
+                "red" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::RED)
+                }
+                "blue" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::BLUE)
+                }
+                "cyan" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::CYAN)
+                }
+                "yellow" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::YELLOW)
+                }
+                "orange" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::ORANGE)
+                }
+                "white" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::WHITE)
+                }
+                "black" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::BLACK)
+                }
+                "pink" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::PINK)
+                }
+                "purple" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::PURPLE)
+                }
+                "brown" => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::BROWN)
+                }
+                _ => {
+                    let c = Colour::new();
+                    c.createFromString(crate::colours::ColourType::BLACK)
+                }
+            },
+        }
+    }
+
+    pub fn parseBoolean(&self, str: &Value, key: &str) -> bool {
+        match str.get(key) {
+            None => false,
+            Some(a) => {
+                return a.as_bool().unwrap();
+            }
+        }
+    }
+
+    pub fn parseTriangleFromJSON(&self, str: &Value) -> Triangle {
+        let id = self.parseString(str, "id");
+        let p1: Vector2 = self.parseVec2(str, "p1");
+        let p2: Vector2 = self.parseVec2(str, "p2");
+        let p3: Vector2 = self.parseVec2(str, "p3");
+        let vel: Vector2 = self.parseVec2(str, "velocity");
+        let rotation = self.parseFloat(str, "rotation");
+        let radius = self.parseFloat(str, "radius");
+        let collisionClass = self.parseString(str, "collisionClass");
+        let collidesWith = self.parseStrVec(str, "collidesWith");
+        let colour = self.parseColour(str, "colour");
+        let filled = self.parseBoolean(str, "filled");
+        let mut c = Triangle::new(
+            p1.toPoint(),
+            p2.toPoint(),
+            p3.toPoint(),
+            colour,
+            id,
+            collisionClass,
+            collidesWith,
+        );
+        c.setRotation(rotation);
+        c.setVelocity(vel);
+        c.setFilled(filled);
+        return c;
+    }
+
+    pub fn parseSquareFromJSON(&self, str: &Value) -> Square {
+        let id = self.parseString(str, "id");
+        let pivot: Vector2 = self.parseVec2(str, "pivot");
+        let width = self.parseFloat(str, "w");
+        let height = self.parseFloat(str, "h");
+        let vel: Vector2 = self.parseVec2(str, "velocity");
+        let rotation = self.parseFloat(str, "rotation");
+        let radius = self.parseFloat(str, "radius");
+        let collisionClass = self.parseString(str, "collisionClass");
+        let collidesWith = self.parseStrVec(str, "collidesWith");
+        let colour = self.parseColour(str, "colour");
+        let filled = self.parseBoolean(str, "filled");
+        let mut c = Square::new(
+            pivot.toPoint(),
+            width,
+            height,
+            colour,
+            id,
+            collisionClass,
+            collidesWith,
+        );
+        c.setRotation(rotation);
+        c.setVelocity(vel);
+        c.setFilled(filled);
+        return c;
+    }
+
+    pub fn parseLineFromJSON(&self, str: &Value) -> Line {
+        let id = self.parseString(str, "id");
+        let p1: Vector2 = self.parseVec2(str, "p1");
+        let p2: Vector2 = self.parseVec2(str, "p2");
+        let vel: Vector2 = self.parseVec2(str, "velocity");
+        let rotation = self.parseFloat(str, "rotation");
+        let radius = self.parseFloat(str, "radius");
+        let collisionClass = self.parseString(str, "collisionClass");
+        let collidesWith = self.parseStrVec(str, "collidesWith");
+        let colour = self.parseColour(str, "colour");
+        let filled = self.parseBoolean(str, "filled");
+        let mut c = Line::new(
+            p1.toPoint(),
+            p2.toPoint(),
+            colour,
+            id,
+            collisionClass,
+            collidesWith,
+        );
+        c.setRotation(rotation);
+        c.setVelocity(vel);
+        c.setFilled(filled);
+        return c;
+    }
+
+    pub fn parseEllipseFromJSON(&self, str: &Value) -> Ellipsis {
+        let id = self.parseString(str, "id");
+        let lp: Vector2 = self.parseVec2(str, "lp");
+        let rp: Vector2 = self.parseVec2(str, "rp");
+        let vel: Vector2 = self.parseVec2(str, "velocity");
+        let rotation = self.parseFloat(str, "rotation");
+        let radius = self.parseFloat(str, "radius");
+        let collisionClass = self.parseString(str, "collisionClass");
+        let collidesWith = self.parseStrVec(str, "collidesWith");
+        let colour = self.parseColour(str, "colour");
+        let filled = self.parseBoolean(str, "filled");
+        let mut c = Ellipsis::new(
+            lp.toPoint(),
+            rp.toPoint(),
+            radius,
+            colour,
+            id,
+            collisionClass,
+            collidesWith,
+        );
+        c.setRotation(rotation);
+        c.setVelocity(vel);
+        c.setFilled(filled);
+        return c;
+    }
+
+    pub fn parseCircleFromJSON(&self, str: &Value) -> Circle {
+        let id = self.parseString(str, "id");
+        let centre: Vector2 = self.parseVec2(str, "centre");
+        let vel: Vector2 = self.parseVec2(str, "velocity");
+
+        let rotation = self.parseFloat(str, "rotation");
+        let radius = self.parseFloat(str, "radius");
+        let collisionClass = self.parseString(str, "collisionClass");
+        let collidesWith = self.parseStrVec(str, "collidesWith");
+        let colour = self.parseColour(str, "colour");
+        let filled = self.parseBoolean(str, "filled");
+        let mut c = Circle::new(
+            centre.x,
+            centre.y,
+            radius,
+            colour,
+            id,
+            collisionClass,
+            collidesWith,
+        );
+        c.setRotation(rotation);
+        c.setFilled(filled);
+        c.setVelocity(vel);
+        return c;
+    }
+
+    pub fn parseBehaviours(&self, str: &Value) -> BehaviourMap {
+        match str.get("behaviours") {
+            None => BehaviourMap::new(),
+            Some(map) => {
+                let vel = self.parseVec2(map, "velocity");
+                let h = self.parseFloat(map, "colour");
+                let pos = self.parseVec2(map, "position");
+                let rot: f64 = self.parseFloat(map, "rotation");
+                println!("HHHH{}", h);
+                BehaviourMap::newWithParam(vel, h as u8, pos, rot)
+            }
+        }
+    }
+
+    pub fn parseCircle(
+        &mut self,
+        id: String,
+        centre: Point,
+        radius: f64,
+        colClass: String,
+        collidesWith: Vec<String>,
+        rotation: f64,
+        colour: Colour,
+        behaviourMap: BehaviourMap,
+    ) {
+        let mut c = Circle::new(
+            centre.x,
+            centre.y,
+            radius,
+            colour,
+            id,
+            colClass,
+            collidesWith,
+        );
+        c.setBehaviourMap(behaviourMap);
+        self.addGameObj(Box::new(c));
+    }
+
+    pub fn createCircle(
+        &mut self,
+        centre: Point,
+        r: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
         self.addGameObj(Box::new(Circle::new(
             centre.x,
             centre.y,
             r,
             colour,
-            self.currentId,
+            id,
+            colClass,
+            collidesWith,
+        )));
+    }
+
+    pub fn createCircleS(
+        &mut self,
+        x: i32,
+        y: i32,
+        r: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
+        self.createCircle(Point::newI(x, y), r, colour, id, colClass, collidesWith)
+    }
+
+    pub fn createEllipsis(
+        &mut self,
+        p1: Point,
+        p2: Point,
+        dist: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
+        self.currentId += 1;
+        self.addGameObj(Box::new(Ellipsis::new(
+            p1,
+            p2,
+            dist,
+            colour,
+            id,
+            colClass,
+            collidesWith,
         )))
     }
 
-    pub fn createCircleS(&mut self, x: i32, y: i32, r: f64, colour: Colour) {
-        self.createCircle(Point::newI(x, y), r, colour)
-    }
-
-    pub fn createLine(&mut self, p: Point, p2: Point, colour: Colour) {
+    pub fn createLine(
+        &mut self,
+        p: Point,
+        p2: Point,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) {
         self.currentId += 1;
-        self.addGameObj(Box::new(Line::new(p, p2, colour, self.currentId)));
+        self.addGameObj(Box::new(Line::new(
+            p,
+            p2,
+            colour,
+            id,
+            colClass,
+            collidesWith,
+        )));
     }
 
     pub fn createRandCircle(
@@ -82,6 +489,9 @@ impl GameObjManager {
         rRange: (i32, i32),
         velRangeX: (i32, i32),
         velRangeY: (i32, i32),
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
     ) {
         self.currentId += 1;
         let mut rng = rand::thread_rng();
@@ -91,7 +501,7 @@ impl GameObjManager {
         let velX = rng.gen_range(velRangeX.0..=velRangeX.1);
         let velY = rng.gen_range(velRangeY.0..=velRangeY.1);
         let colour = Colour::new().createRandHSVA();
-        let mut circle = Circle::new(x, y, r, colour, self.currentId);
+        let mut circle = Circle::new(x, y, r, colour, id, colClass, collidesWith);
         circle.setVelocity(Vector2::newI(velX, velY));
         self.addGameObj(Box::new(circle));
     }

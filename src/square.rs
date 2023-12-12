@@ -3,20 +3,29 @@ use std::ops::Range;
 use crate::{
     collisionBox::CollisionBox,
     colours::Colour,
-    gameObj::{GameObj, IGameObj},
+    gameObj::{BehaviourMap, GameObj, IGameObj},
     point::Point,
     renderer::Renderer,
     utils::rotatePoint,
     vector2::Vector2,
 };
 
+#[derive(Debug)]
 pub struct Square {
     gameObj: GameObj,
     colBox: CollisionBox,
 }
 
 impl Square {
-    pub fn new(p: Point, w: f64, h: f64, colour: Colour, id: u64) -> Square {
+    pub fn new(
+        p: Point,
+        w: f64,
+        h: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) -> Square {
         let mut retS = Square {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -29,16 +38,19 @@ impl Square {
                     Point::new(p.x, p.y + h),
                 ],
                 filled: false,
-                id,
+                id: id.clone(),
                 mass: 123.4,
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
+                behaviourMap: BehaviourMap::new(),
             },
             colBox: CollisionBox::new(
                 crate::collisionBox::CollisionBoxTypes::AABB,
                 vec![],
                 vec![],
-                id,
+                id.clone(),
+                colClass,
+                collidesWith,
             ),
         };
         let centrePoint = retS.gameObj.points[0].centreTo(&retS.gameObj.points[3]);
@@ -107,7 +119,7 @@ impl IGameObj for Square {
         self.gameObj.mMove();
     }
 
-    fn getID(&self) -> u64 {
+    fn getID(&self) -> String {
         return self.gameObj.getId();
     }
 
@@ -121,5 +133,11 @@ impl IGameObj for Square {
 
     fn getMass(&self) -> f64 {
         return self.gameObj.getMass();
+    }
+    fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.gameObj.setBehaviourMap(map);
+    }
+    fn applyBehaviour(&mut self) {
+        self.gameObj.applyBehaviour();
     }
 }

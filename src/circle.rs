@@ -4,11 +4,12 @@ use crate::{
     collisionBox::{CollisionBox, CollisionBoxTypes},
     colours::Colour,
     constants::{DEL_HEIGHT_L, DEL_HEIGHT_R, DEL_WIDTH_R, WIDTH},
-    gameObj::{GameObj, IGameObj},
+    gameObj::{BehaviourMap, GameObj, IGameObj},
     point::Point,
     vector2::Vector2,
 };
 
+#[derive(Debug)]
 pub struct Circle {
     gameObj: GameObj,
     r: f64,
@@ -16,7 +17,15 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(x: f64, y: f64, r: f64, colour: Colour, id: u64) -> Circle {
+    pub fn new(
+        x: f64,
+        y: f64,
+        r: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) -> Circle {
         let centre = Point::new(x, y);
         return Circle {
             gameObj: GameObj {
@@ -25,13 +34,20 @@ impl Circle {
                 colour,
                 points: vec![centre],
                 filled: true,
-                id,
+                id: id.clone(),
                 mass: r,
                 movesLeft: 0,
                 velocity: Vector2::newI(0, 0),
+                behaviourMap: BehaviourMap::new(),
             },
             r,
-            collisonBox: CollisionBox::newCircle(vec![centre], vec![r], id),
+            collisonBox: CollisionBox::newCircle(
+                vec![centre],
+                vec![r],
+                id.clone(),
+                colClass,
+                collidesWith,
+            ),
         };
     }
 }
@@ -117,7 +133,7 @@ impl IGameObj for Circle {
         self.collisonBox.moveF(x, y);
     }
 
-    fn getID(&self) -> u64 {
+    fn getID(&self) -> String {
         return self.gameObj.getId();
     }
 
@@ -131,5 +147,11 @@ impl IGameObj for Circle {
 
     fn getMass(&self) -> f64 {
         return self.gameObj.getMass();
+    }
+    fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.gameObj.setBehaviourMap(map);
+    }
+    fn applyBehaviour(&mut self) {
+        self.gameObj.applyBehaviour();
     }
 }

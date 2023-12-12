@@ -1,6 +1,8 @@
 use core::num;
 
+use pixels::wgpu::BufferUsages;
 use rand::seq;
+use std::fmt::Debug;
 
 use crate::{
     collisionBox::CollisionBox,
@@ -12,16 +14,46 @@ use crate::{
     vector2::Vector2,
 };
 
+#[derive(Debug)]
+pub struct BehaviourMap {
+    velocity: Vector2,
+    rotation: f64,
+    h: u8,
+    position: Vector2,
+}
+
+impl BehaviourMap {
+    pub fn new() -> BehaviourMap {
+        return BehaviourMap {
+            velocity: Vector2::newI(0, 0),
+            h: 0,
+            position: Vector2::newI(0, 0),
+            rotation: 0.0,
+        };
+    }
+
+    pub fn newWithParam(vel: Vector2, h: u8, pos: Vector2, rotation: f64) -> BehaviourMap {
+        return BehaviourMap {
+            velocity: vel,
+            h,
+            position: pos,
+            rotation,
+        };
+    }
+}
+
+#[derive(Debug)]
 pub struct GameObj {
     pub rotation: f64,
     pub centre: Point,
     pub colour: Colour,
     pub points: Vec<Point>,
     pub filled: bool,
-    pub id: u64,
+    pub id: String,
     pub velocity: Vector2,
     pub movesLeft: i32,
     pub mass: f64,
+    pub behaviourMap: BehaviourMap,
 }
 
 impl GameObj {
@@ -39,10 +71,10 @@ impl GameObj {
     }
 
     pub fn rotate(&mut self, rad: f64) {
-        self.rotation += rad;
+        self.rotation += rad * 0.001;
         self.rotation %= 360.0;
         for p in &mut self.points {
-            *p = rotatePoint(&p, rad, &self.centre)
+            *p = rotatePoint(&p, rad * 0.001, &self.centre)
         }
     }
 
@@ -90,8 +122,8 @@ impl GameObj {
         return self.velocity;
     }
 
-    pub fn getId(&self) -> u64 {
-        return self.id;
+    pub fn getId(&self) -> String {
+        return self.id.clone();
     }
 
     pub fn getMovesLeft(&self) -> i32 {
@@ -105,9 +137,21 @@ impl GameObj {
     pub fn getMass(&self) -> f64 {
         return self.mass;
     }
+
+    pub fn applyBehaviour(&mut self) {
+        let posChange = self.behaviourMap.position;
+        self.moveF(posChange.x, posChange.y);
+        self.rotate(self.behaviourMap.rotation);
+        self.setVelocity(self.getVelocity().add(self.behaviourMap.velocity));
+        self.colour.increaseHSVA(self.behaviourMap.h.into());
+    }
+
+    pub fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.behaviourMap = map;
+    }
 }
 
-pub trait IGameObj {
+pub trait IGameObj: Debug {
     fn draw(&self, renderer: &mut Renderer);
     fn moveI(&mut self, x: i64, y: i64);
     fn moveF(&mut self, x: f64, y: f64) {
@@ -124,9 +168,11 @@ pub trait IGameObj {
     fn getColBoxMut(&mut self) -> &mut CollisionBox;
     fn setVelocity(&mut self, v: Vector2);
     fn getVelocity(&self) -> Vector2;
-    fn getID(&self) -> u64;
+    fn getID(&self) -> String;
     fn mMove(&mut self);
     fn getMovesLeft(&self) -> i32;
     fn setMovesLeft(&mut self, val: i32);
     fn getMass(&self) -> f64;
+    fn setBehaviourMap(&mut self, map: BehaviourMap);
+    fn applyBehaviour(&mut self);
 }

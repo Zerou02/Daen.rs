@@ -57,4 +57,16 @@ impl Vector2 {
             self.x = self.x / self.x * isNegative;
         }
     }
+
+    pub fn add(&self, other: Vector2) -> Vector2 {
+        return Vector2 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        };
+    }
+
+    pub fn round(&mut self) {
+        self.x = self.x.round();
+        self.y = self.y.round();
+    }
 }

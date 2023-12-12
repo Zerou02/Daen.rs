@@ -2,12 +2,13 @@ use crate::{
     collisionBox::CollisionBox,
     colours::Colour,
     constants::{DEL_HEIGHT_L, DEL_HEIGHT_R, DEL_WIDTH_L, DEL_WIDTH_R},
-    gameObj::{GameObj, IGameObj},
+    gameObj::{BehaviourMap, GameObj, IGameObj},
     point::Point,
     utils::rotatePoint,
     vector2::Vector2,
 };
 
+#[derive(Debug)]
 pub struct Ellipsis {
     gameObj: GameObj,
     distance: f64,
@@ -15,7 +16,15 @@ pub struct Ellipsis {
 }
 
 impl Ellipsis {
-    pub fn new(p1: Point, p2: Point, distance: f64, colour: Colour, id: u64) -> Ellipsis {
+    pub fn new(
+        p1: Point,
+        p2: Point,
+        distance: f64,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) -> Ellipsis {
         return Ellipsis {
             gameObj: GameObj {
                 rotation: 0.0,
@@ -23,17 +32,20 @@ impl Ellipsis {
                 colour,
                 points: vec![p1, p2],
                 filled: false,
-                id,
+                id: id.clone(),
                 velocity: Vector2::newI(0, 0),
                 mass: distance,
                 movesLeft: 0,
+                behaviourMap: BehaviourMap::new(),
             },
             distance,
             colBox: CollisionBox::new(
-                crate::collisionBox::CollisionBoxTypes::AABB,
-                vec![],
-                vec![],
-                id,
+                crate::collisionBox::CollisionBoxTypes::Ellipsis,
+                vec![p1, p2],
+                vec![distance],
+                id.clone(),
+                colClass,
+                collidesWith,
             ),
         };
     }
@@ -114,7 +126,7 @@ impl IGameObj for Ellipsis {
         self.gameObj.mMove();
     }
 
-    fn getID(&self) -> u64 {
+    fn getID(&self) -> String {
         return self.gameObj.getId();
     }
 
@@ -128,5 +140,18 @@ impl IGameObj for Ellipsis {
 
     fn getMass(&self) -> f64 {
         return self.gameObj.getMass();
+    }
+
+    fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.gameObj.setBehaviourMap(map);
+    }
+
+    fn applyBehaviour(&mut self) {
+        self.gameObj.applyBehaviour();
+        self.colBox.points = self.gameObj.points.clone();
+    }
+
+    fn moveF(&mut self, x: f64, y: f64) {
+        self.moveI(x as i64, y as i64)
     }
 }

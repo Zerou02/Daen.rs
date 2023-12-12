@@ -25,14 +25,18 @@ mod utils;
 mod vector2;
 mod world;
 
+use std::env::args;
 use std::f64::consts::PI;
+use std::fs;
 
 use circle::Circle;
 use colours::{getColourVal, Colour, ColourType};
 use constants::{HEIGHT, WIDTH};
+use gameObj::BehaviourMap;
 use line::Line;
 use point::Point;
 use renderer::Renderer;
+use serde_json::{self, Value};
 use square::Square;
 use utils::getTime;
 
@@ -71,120 +75,33 @@ fn main() -> Result<(), Error> {
         Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture)?
     };
 
-    let mut c = Colour::new();
-    let baseColour = c.createRandHSVA();
-    baseColour.setHSVA([255, 255, 255, 255]);
     let renderer = Renderer::new(pixels, HEIGHT, WIDTH);
 
     let mut world = World::new(renderer);
+    let args: Vec<String> = args().collect();
+    let file = match args.get(1) {
+        Some(a) => a,
+        None => panic!("Baka. Name a file"),
+    };
 
-    /*     world.objectManager.createSquare(
-           Point::newI(300, 300),
-           Point::newI(100, 100),
-           baseColour.clone(),
-       );
-    */
+    let content = fs::read_to_string(file.to_owned() + ".json")
+        .expect("Baka. Name a correct file. Or get Permission to do your stuff");
+    let test: Vec<Value> = serde_json::from_str(&content).unwrap();
+    world.gObjMM().parseConfig(test);
 
-    world.objectManager.createLine(
-        Point::newI(100, 500),
-        Point::newI(700, 500),
-        Colour::createColour(colours::ColourType2::RED),
-    );
-    world.objectManager.createLine(
-        Point::newI(100, 100),
-        Point::newI(100, 500),
-        Colour::createColour(colours::ColourType2::RED),
-    );
-
-    world.objectManager.createLine(
-        Point::newI(100, 100),
-        Point::newI(700, 100),
-        Colour::createColour(colours::ColourType2::RED),
-    );
-    world.objectManager.createLine(
-        Point::newI(700, 100),
-        Point::newI(700, 500),
-        Colour::createColour(colours::ColourType2::RED),
-    );
-
-    world.gObjMM().createCircle(
-        Point::newI(220, 300),
-        10.0,
-        Colour::createColour(colours::ColourType2::BLUE),
-    );
-    world
-        .objectManager
-        .getGameObj(5)
-        .setVelocity(Vector2::new(1.0, 1.0));
-
-    /*     world.gObjMM().createCircle(
-        Point::newI(330, 300),
-        10.0,
-        Colour::createColour(colours::ColourType2::BLUE),
-    );
-    world
-        .objectManager
-        .getGameObj(6)
-        .setVelocity(Vector2::new(-1.0, 0.0));
-
-    world.gObjMM().createCircle(
-        Point::newI(330, 200),
-        10.0,
-        Colour::createColour(colours::ColourType2::BLUE),
-    );
-    world
-        .objectManager
-        .getGameObj(7)
-        .setVelocity(Vector2::new(0.0, 1.0)); */
-    /*     for x in 0..1 {
-        world
-            .gObjMM()
-            .createRandCircle((200, 500), (200, 400), (10, 20), (-5, 5), (-5, 5));
-    } */
-
-    /*     let mut matrix = Matrix::new(2, 2);
-    matrix.addVec(0, Vector2::newI(0, 4));
-    matrix.addVec(1, Vector2::newI(1, 2));
-
-    let mut b = Matrix::new(1, 2);
-    b.addVec(0, Vector2::newI(1, 1));
-
-    for i in (0..10).rev() {
-        println!("{}", i);
-    }
-    matrix.print();
-    b.print();
-    gaussianElimination(&mut matrix, &mut b); */
-
-    let rad: f64 = (45.0_f64).to_radians();
-    println!(
-        "{:?}",
-        rotatePoint(&Point::new(1.0, 1.0), 2.0 * rad, &Point::newI(0, 0))
-    );
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
             let start1 = getTime();
-            /*
-                for x in &mut world.objectManager.gameObj {
-                    x.getColour().increaseHSVA(1);
-            } */
-
             world.drawAll();
             world.renderer.pixelsObj.render().unwrap();
             let end1 = getTime();
-            //println!("Time:{}", end1 - start1);
         }
-
-        // Handle input events
         if input.update(&event) {
-            // Close events
             if input.key_pressed(VirtualKeyCode::Escape) || input.close_requested() {
                 *control_flow = ControlFlow::Exit;
                 return;
             }
-
-            // Resize the window
             if let Some(size) = input.window_resized() {
                 world
                     .renderer
@@ -193,8 +110,6 @@ fn main() -> Result<(), Error> {
                     .unwrap();
                 return;
             }
-
-            // Update internal state and request a redraw
             window.request_redraw();
         }
     });

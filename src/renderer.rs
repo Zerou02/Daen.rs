@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::btree_map::Range};
 
 use pixels::Pixels;
 
@@ -204,6 +204,24 @@ impl Renderer {
 
     pub fn drawCircle(self: &mut Self, point: &Point, distance: i32, colour: rgbColour) {
         self.drawEllipsis(point, point, distance, colour);
+    }
+
+    pub fn drawEllipsisClassic(
+        self: &mut Self,
+        point1: &Point,
+        point2: &Point,
+        distance: i32,
+        colour: rgbColour,
+    ) {
+        let ordereredPoints = point1.orderedPoints(point2);
+        for x in ordereredPoints.0.x as i32 - distance..ordereredPoints.1.x as i32 + distance {
+            for y in ordereredPoints.0.y as i32 - distance..ordereredPoints.1.y as i32 + distance {
+                let point = Point::newI(x, y);
+                if (point.distanceTo(&point1) + point.distanceTo(&point2) == distance as f64) {
+                    self.fillPixel(x, y, colour);
+                }
+            }
+        }
     }
 
     pub fn drawEllipsis(

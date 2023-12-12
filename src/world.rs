@@ -1,6 +1,6 @@
 use crate::{
     colours::getColourVal,
-    gameObj::{GameObj, IGameObj},
+    gameObj::{self, GameObj, IGameObj},
     gameObjectManager::GameObjManager,
     physicsEngine::PhysicsEngine,
     renderer::Renderer,
@@ -11,6 +11,7 @@ pub struct World {
     pub renderer: Renderer,
     pub objectManager: GameObjManager,
     physicsEngine: PhysicsEngine,
+    count: i32,
 }
 
 impl World {
@@ -19,16 +20,19 @@ impl World {
             renderer,
             objectManager: GameObjManager::new(),
             physicsEngine: PhysicsEngine::new(),
+            count: 0,
         }
     }
     pub fn addObj(self: &mut Self, object: Box<dyn IGameObj>) {
         self.objectManager.addGameObj(object);
     }
-    pub fn drawAll(&mut self) {
-        self.clear();
 
+    pub fn drawAll(&mut self) {
         let start1 = getTime();
         let mut indicesToRemove: Vec<usize> = vec![];
+        for x in &mut self.objectManager.gameObj {
+            x.applyBehaviour();
+        }
         self.physicsEngine
             .applyPhysics(&mut self.objectManager.gameObj);
 
@@ -44,7 +48,6 @@ impl World {
             self.objectManager.gameObj.remove(i);
         }
         let end1 = getTime();
-        //println!("Time:{}", end1 - start1);
     }
 
     pub fn drawAllAtIndex(&mut self, index: usize) {
@@ -55,7 +58,6 @@ impl World {
             }
         }
         let end1 = getTime();
-        //println!("Time:{}", end1 - start1);
     }
 
     pub fn clear(&mut self) {

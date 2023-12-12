@@ -1,19 +1,27 @@
 use crate::{
     collisionBox::CollisionBox,
     colours::Colour,
-    gameObj::{GameObj, IGameObj},
+    gameObj::{BehaviourMap, GameObj, IGameObj},
     point::Point,
     utils::rotatePoint,
     vector2::Vector2,
 };
-
+#[derive(Debug)]
 pub struct Triangle {
     gameObj: GameObj,
     colBox: CollisionBox,
 }
 
 impl Triangle {
-    pub fn new(p1: Point, p2: Point, p3: Point, colour: Colour, id: u64) -> Triangle {
+    pub fn new(
+        p1: Point,
+        p2: Point,
+        p3: Point,
+        colour: Colour,
+        id: String,
+        colClass: String,
+        collidesWith: Vec<String>,
+    ) -> Triangle {
         let mut retVal = Triangle {
             gameObj: GameObj {
                 colour,
@@ -22,15 +30,18 @@ impl Triangle {
                 rotation: 0.0,
                 filled: false,
                 movesLeft: 0,
-                id,
+                id: id.clone(),
                 mass: 0.0,
                 velocity: Vector2::newI(0, 0),
+                behaviourMap: BehaviourMap::new(),
             },
             colBox: CollisionBox::new(
                 crate::collisionBox::CollisionBoxTypes::AABB,
                 vec![],
                 vec![],
-                id,
+                id.clone(),
+                colClass,
+                collidesWith,
             ),
         };
         retVal.calculateCentrePoint();
@@ -47,14 +58,14 @@ impl Triangle {
 impl IGameObj for Triangle {
     fn draw(&self, renderer: &mut crate::renderer::Renderer) {
         if (self.gameObj.filled) {
-            renderer.drawTriangle(
+            renderer.fillTriangle(
                 &self.gameObj.points[0],
                 &self.gameObj.points[1],
                 &self.gameObj.points[2],
                 self.gameObj.colour.rgba,
             );
         } else {
-            renderer.fillTriangle(
+            renderer.drawTriangle(
                 &self.gameObj.points[0],
                 &self.gameObj.points[1],
                 &self.gameObj.points[2],
@@ -114,7 +125,7 @@ impl IGameObj for Triangle {
         self.gameObj.mMove();
     }
 
-    fn getID(&self) -> u64 {
+    fn getID(&self) -> String {
         return self.gameObj.getId();
     }
 
@@ -128,5 +139,11 @@ impl IGameObj for Triangle {
 
     fn getMass(&self) -> f64 {
         return self.gameObj.getMass();
+    }
+    fn setBehaviourMap(&mut self, map: BehaviourMap) {
+        self.gameObj.setBehaviourMap(map);
+    }
+    fn applyBehaviour(&mut self) {
+        self.gameObj.applyBehaviour();
     }
 }

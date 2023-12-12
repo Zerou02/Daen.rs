@@ -1,5 +1,8 @@
+use std::f32::consts::E;
+
 use crate::{
     collisionBox::CollisionBoxTypes,
+    ellipsis,
     gameObj::{self, IGameObj},
     matrix::{self, Matrix},
     point::Point,
@@ -19,7 +22,7 @@ impl PhysicsEngine {
     pub fn applyPhysics(&self, gameobjs: &mut Vec<Box<dyn IGameObj>>) {
         for i in 0..gameobjs.len() {
             let vel = gameobjs[i].getVelocity();
-            let isZeroX = vel.x == 0.0;
+            let isZeroX = vel.x.round() == 0.0;
             gameobjs[i].setMovesLeft(if (isZeroX) {
                 vel.y.abs().round()
             } else {
@@ -31,7 +34,6 @@ impl PhysicsEngine {
                 xStep = 0.0;
                 yStep = if (vel.y < 0.0) { -1.0 } else { 1.0 }
             }
-            //     println!("yStep{}{}", xStep, yStep);
             while gameobjs[i].getMovesLeft() > 0 {
                 gameobjs[i].moveF(xStep, yStep);
                 let left = gameobjs[i].getMovesLeft() - 1;
@@ -48,8 +50,10 @@ impl PhysicsEngine {
                             break;
                         }
                     }
-                    gameobjs[i].getColBoxMut().setToCollidedWith(j as u64);
-                    gameobjs[j].getColBoxMut().setToCollidedWith(i as u64);
+                    let jId = gameobjs[j].getColBoxMut().getId();
+                    let iId = gameobjs[i].getColBoxMut().getId();
+                    gameobjs[i].getColBoxMut().setToCollidedWith(jId);
+                    gameobjs[j].getColBoxMut().setToCollidedWith(iId);
 
                     let velI = gameobjs[i].getVelocity();
                     let velJ = gameobjs[j].getVelocity();
@@ -76,9 +80,8 @@ impl PhysicsEngine {
                                     lineVec,
                                     true,
                                 );
-                                //   println!("velJ{:?}", velJ);
-                                gameobjs[i].setVelocity(velJ);
-                                gameobjs[j].setVelocity(velI);
+                                gameobjs[i].setVelocity(velI);
+                                gameobjs[j].setVelocity(velJ);
                             }
                             CollisionBoxTypes::Line => {
                                 let lineBase = &gameobjs[j].getColBox().points[0].toVec();
@@ -87,6 +90,23 @@ impl PhysicsEngine {
                                 let newVel = self.handleCollisionLineCircle(
                                     &mut gameobjs[i],
                                     lineBase.clone(),
+                                    lineVec,
+                                    false,
+                                );
+                                gameobjs[i].setVelocity(newVel);
+                            }
+                            CollisionBoxTypes::Ellipsis => {
+                                let points = &gameobjs[j].getColBoxMut().points.clone();
+                                let eDist = gameobjs[j].getColBoxMut().values[0];
+                                let (lineBase, lineVec) = self.handleCircleEllipsisCollision(
+                                    &mut gameobjs[i],
+                                    points[0],
+                                    points[1],
+                                    eDist,
+                                );
+                                let newVel = self.handleCollisionLineCircle(
+                                    &mut gameobjs[i],
+                                    lineBase,
                                     lineVec,
                                     false,
                                 );
@@ -108,6 +128,27 @@ impl PhysicsEngine {
                                 gameobjs[j].setVelocity(newVel);
                             }
                             CollisionBoxTypes::Line => {}
+                            CollisionBoxTypes::Ellipsis => todo!(),
+                        },
+                        CollisionBoxTypes::Ellipsis => match gameobjs[j].getColBox().colType {
+                            CollisionBoxTypes::Circle => {
+                                let points = &gameobjs[i].getColBoxMut().points.clone();
+                                let eDist = gameobjs[i].getColBoxMut().values[0];
+                                let (lineBase, lineVec) = self.handleCircleEllipsisCollision(
+                                    &mut gameobjs[j],
+                                    points[0],
+                                    points[1],
+                                    eDist,
+                                );
+                                let newVel = self.handleCollisionLineCircle(
+                                    &mut gameobjs[j],
+                                    lineBase,
+                                    lineVec,
+                                    false,
+                                );
+                                gameobjs[j].setVelocity(newVel);
+                            }
+                            _ => {}
                         },
                     }
                 }
@@ -128,11 +169,16 @@ impl PhysicsEngine {
         &self,
         obj1: &Box<dyn IGameObj>,
         gameobjs: &Vec<Box<dyn IGameObj>>,
-    ) -> (bool, u64) {
+    ) -> (bool, String) {
         let mut collided = false;
-        let mut id = 1;
+        let mut id: String = "".to_owned();
         for i in gameobjs {
-            if (obj1.getID() != i.getID()) {
+            if (obj1.getID() != i.getID()
+                && obj1
+                    .getColBox()
+                    .collidesWith
+                    .contains(&i.getColBox().collisionClass))
+            {
                 if (obj1.getColBox().collides(i.getColBox())) {
                     collided = true;
                     id = i.getID();
@@ -152,7 +198,13 @@ impl PhysicsEngine {
     ) -> Vector2 {
         let centre = circle.getColBoxMut().points[0];
         let velI = circle.getVelocity();
-        let velJ = lineVec;
+        let mut velJ = lineVec;
+        if (velI.y < 0.0) {
+            velJ.x = -1.0 * lineVec.x;
+        }
+        if (velI.x > 0.0) {
+            velJ.y = -1.0 * lineVec.y;
+        }
         let baseI = circle.getColBoxMut().points[0].toVec();
         let baseJ = lineBase;
         let bVec = baseJ.subtract(&baseI);
@@ -161,7 +213,7 @@ impl PhysicsEngine {
         let mut matrix = Matrix::new(2, 2);
         matrix.addVec(0, velI);
         matrix.addVec(1, velJ.reverse());
-        let angle = velI.angleTo(&velJ);
+        let angle = velI.angleTo(&velJ).round();
         let result = self.gaussianElimination(&mut matrix, &mut b);
         let mut sp = Point::new(
             baseI.x + velI.x * result.getEntry(0, 0),
@@ -170,29 +222,115 @@ impl PhysicsEngine {
         if (baseIsSp) {
             sp = lineBase.toPoint();
         }
-        let mut normalizedAngle = if (angle) < 90.0 { angle } else { 180.0 - angle };
-        let origNormalizedAngle = normalizedAngle;
-        let rotatedFirst = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
-        let newVelFirst = sp.vecTo(rotatedFirst);
-        let nP = rotatedFirst.toVec().subtract(&baseJ);
-        let isMultiple = (nP.x / velJ.x) * velJ.y == nP.y;
-        if (isMultiple) {
-            normalizedAngle = 2.0 * normalizedAngle + 180.0;
-        } else {
-            normalizedAngle *= 2.0
-        }
-        println!("angel{}", angle);
-        println!("altAnge{}", normalizedAngle);
-        let newRotated = rotatePoint(&centre, normalizedAngle.to_radians(), &sp);
-        let mut newVel = rotatePoint(
+        let newVel = rotatePoint(
             &circle.getVelocity().toPoint(),
-            2.0 * origNormalizedAngle.to_radians(),
+            2.0 * angle.to_radians(),
             &Point::newI(0, 0),
         );
-        println!("newVel{:?}", newVel);
-        //let mut newVel = sp.vecTo(newRotated);
-        //newVel.normalize();
         return newVel.toVec();
+    }
+
+    pub fn handleCircleEllipsisCollision(
+        &self,
+        circle: &mut Box<dyn IGameObj>,
+        leftFocalPoint: Point,
+        rightFocalPoint: Point,
+        eDist: f64,
+    ) -> (Vector2, Vector2) {
+        let mut sp: Point = Point::newI(0, 0);
+        let mut circleVel = circle.getVelocity();
+        let radius = circle.getColBoxMut().values[0];
+        let circleCentre = circle.getColBoxMut().points[0];
+        circleVel.normalize();
+        for x in -radius as i32..radius as i32 {
+            let pY = (x as f64 * circleVel.y) + circleCentre.y;
+            let pX = x as f64 * circleVel.x + circleCentre.x;
+            let p = Point::new(pX, pY);
+            let isSp = (leftFocalPoint.distanceTo(&p) + rightFocalPoint.distanceTo(&p) - eDist)
+                .abs()
+                < 0.1;
+            if (isSp) {
+                sp = p.clone();
+            }
+        }
+
+        let mut currentPoint = sp.clone();
+        let mut lastEntry = sp.clone();
+        let directionMap = [
+            [-1, 0],
+            [-1, -1],
+            [0, -1],
+            [1, -1],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [-1, 1],
+        ];
+
+        let mut distVec: Vec<f64> = Vec::with_capacity(8);
+        //checkAllIndices
+        for x in directionMap {
+            let p = Point::new(currentPoint.x + x[0] as f64, currentPoint.y + x[1] as f64);
+            distVec.push(
+                ((p.distanceTo(&leftFocalPoint) + p.distanceTo(&rightFocalPoint)) - eDist as f64)
+                    .abs(),
+            );
+        }
+        //eval
+        let mut index = 9999;
+        let mut min = 99999.0;
+        for (i, x) in distVec.iter().enumerate() {
+            if (*x < min
+                && !(directionMap[i][0] as f64 + currentPoint.x == lastEntry.x
+                    && directionMap[i][1] as f64 + currentPoint.y == lastEntry.y))
+            {
+                min = *x;
+                index = i;
+            }
+        }
+        let mut index2 = 9999;
+        min = 999999.0;
+        for (i, x) in distVec.iter().enumerate() {
+            if (*x <= min
+                && !(directionMap[i][0] as f64 + currentPoint.x == lastEntry.x
+                    && directionMap[i][1] as f64 + currentPoint.y == lastEntry.y)
+                && i != index)
+            {
+                min = *x;
+                index2 = i;
+            }
+        }
+        let mut test = currentPoint.clone();
+        currentPoint.movePoint(directionMap[index][0] as f64, directionMap[index][1] as f64);
+        let cp2 = currentPoint.clone();
+        test.movePoint(
+            directionMap[index2][0] as f64,
+            directionMap[index2][1] as f64,
+        );
+
+        let points = vec![currentPoint, sp, test];
+        let mut minX = 99999.0;
+        let mut maxX = 0.0;
+        let mut maxY = 0.0;
+        let mut minY = 9999.0;
+        for p in points {
+            if (p.x) < minX {
+                minX = p.x;
+            }
+            if (p.x > maxX) {
+                maxX = p.x;
+            }
+            if (p.y > maxY) {
+                maxY = p.y;
+            }
+            if (p.y < minY) {
+                minY = p.y;
+            }
+        }
+
+        let lineBase = Point::new(minX, minY);
+        let lineVec = Vector2::new(maxX, maxY).subtract(&lineBase.toVec());
+        return (lineBase.toVec(), lineVec);
     }
 
     pub fn gaussianElimination(&self, a: &mut Matrix, b: &mut Matrix) -> Matrix {
