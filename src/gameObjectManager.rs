@@ -119,15 +119,12 @@ impl GameObjManager {
                     "Square" => Box::new(self.parseSquareFromJSON(&x)),
                     "Triangle" => Box::new(self.parseTriangleFromJSON(&x)),
                     _ => {
-                        println!("{:?}", x.get("type"));
-                        panic!("wwfwefw")
+                        panic!("Wrong, misspelled or forgotten type")
                     }
                 },
             };
-            println!("{:?}", gameObj);
             gameObj.setBehaviourMap(map);
             self.addGameObj(gameObj);
-            //   println!(self.getGameObj(id))
         }
     }
 
@@ -165,7 +162,6 @@ impl GameObjManager {
                 let b = a.clone();
                 let mut retVec: Vec<String> = vec![];
                 for x in b.as_str().unwrap().split(",") {
-                    println!("{}", b);
                     retVec.push(self.removeEscapesSeq(x));
                 }
                 return retVec;
@@ -174,59 +170,66 @@ impl GameObjManager {
     }
 
     pub fn parseColour(&self, str: &Value, key: &str) -> Colour {
+        let mut c = Colour::new();
         match str.get(key) {
-            None => Colour::new(),
+            None => {
+                c = Colour::new();
+            }
             Some(a) => match self.removeEscapesSeq(a.as_str().clone().unwrap()).as_str() {
                 "green" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::GREEN)
+                    c.createFromString(crate::colours::ColourType::GREEN);
                 }
-                "red" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::RED)
-                }
-                "blue" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::BLUE)
-                }
-                "cyan" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::CYAN)
-                }
-                "yellow" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::YELLOW)
-                }
-                "orange" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::ORANGE)
-                }
-                "white" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::WHITE)
-                }
-                "black" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::BLACK)
-                }
-                "pink" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::PINK)
-                }
-                "purple" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::PURPLE)
-                }
-                "brown" => {
-                    let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::BROWN)
-                }
+                "red" => c.createFromString(crate::colours::ColourType::RED),
+                "blue" => c.createFromString(crate::colours::ColourType::BLUE),
+                "cyan" => c.createFromString(crate::colours::ColourType::CYAN),
+                "yellow" => c.createFromString(crate::colours::ColourType::YELLOW),
+                "orange" => c.createFromString(crate::colours::ColourType::ORANGE),
+                "white" => c.createFromString(crate::colours::ColourType::WHITE),
+                "black" => c.createFromString(crate::colours::ColourType::BLACK),
+                "pink" => c.createFromString(crate::colours::ColourType::PINK),
+                "purple" => c.createFromString(crate::colours::ColourType::PURPLE),
+                "brown" => c.createFromString(crate::colours::ColourType::BROWN),
                 _ => {
                     let c = Colour::new();
-                    c.createFromString(crate::colours::ColourType::BLACK)
                 }
             },
+        };
+        return c;
+    }
+
+    fn getHsvaVal(&self, colour: &str) -> [u8; 4] {
+        let mut c = Colour::new();
+        match colour {
+            "green" => {
+                c.createFromString(crate::colours::ColourType::GREEN);
+            }
+            "red" => c.createFromString(crate::colours::ColourType::RED),
+            "blue" => c.createFromString(crate::colours::ColourType::BLUE),
+            "cyan" => c.createFromString(crate::colours::ColourType::CYAN),
+            "yellow" => c.createFromString(crate::colours::ColourType::YELLOW),
+            "orange" => c.createFromString(crate::colours::ColourType::ORANGE),
+            "white" => c.createFromString(crate::colours::ColourType::WHITE),
+            "black" => c.createFromString(crate::colours::ColourType::BLACK),
+            "pink" => c.createFromString(crate::colours::ColourType::PINK),
+            "purple" => c.createFromString(crate::colours::ColourType::PURPLE),
+            "brown" => c.createFromString(crate::colours::ColourType::BROWN),
+            _ => {
+                let c = Colour::new();
+            }
+        };
+        return c.hsva;
+    }
+    pub fn parseColourRange(&self, str: &Value, key: &str) -> Vec<[u8; 4]> {
+        let mut retVec: Vec<[u8; 4]> = vec![];
+        match str.get(key) {
+            None => {}
+            Some(a) => {
+                for x in str[key].as_str().unwrap().split(",") {
+                    retVec.push(self.getHsvaVal(x))
+                }
+            }
         }
+        return retVec;
     }
 
     pub fn parseBoolean(&self, str: &Value, key: &str) -> bool {
@@ -250,6 +253,7 @@ impl GameObjManager {
         let collidesWith = self.parseStrVec(str, "collidesWith");
         let colour = self.parseColour(str, "colour");
         let filled = self.parseBoolean(str, "filled");
+        let ranges = self.parseColourRange(str, "range");
         let mut c = Triangle::new(
             p1.toPoint(),
             p2.toPoint(),
@@ -259,6 +263,8 @@ impl GameObjManager {
             collisionClass,
             collidesWith,
         );
+        let newColour = c.getColour().clone().setRanges(ranges);
+        c.setColour(newColour);
         c.setRotation(rotation);
         c.setVelocity(vel);
         c.setFilled(filled);
@@ -277,6 +283,7 @@ impl GameObjManager {
         let collidesWith = self.parseStrVec(str, "collidesWith");
         let colour = self.parseColour(str, "colour");
         let filled = self.parseBoolean(str, "filled");
+        let ranges = self.parseColourRange(str, "range");
         let mut c = Square::new(
             pivot.toPoint(),
             width,
@@ -286,6 +293,8 @@ impl GameObjManager {
             collisionClass,
             collidesWith,
         );
+        let newColour = c.getColour().clone().setRanges(ranges);
+        c.setColour(newColour);
         c.setRotation(rotation);
         c.setVelocity(vel);
         c.setFilled(filled);
@@ -303,6 +312,7 @@ impl GameObjManager {
         let collidesWith = self.parseStrVec(str, "collidesWith");
         let colour = self.parseColour(str, "colour");
         let filled = self.parseBoolean(str, "filled");
+        let ranges = self.parseColourRange(str, "range");
         let mut c = Line::new(
             p1.toPoint(),
             p2.toPoint(),
@@ -311,6 +321,8 @@ impl GameObjManager {
             collisionClass,
             collidesWith,
         );
+        let newColour = c.getColour().clone().setRanges(ranges);
+        c.setColour(newColour);
         c.setRotation(rotation);
         c.setVelocity(vel);
         c.setFilled(filled);
@@ -328,6 +340,7 @@ impl GameObjManager {
         let collidesWith = self.parseStrVec(str, "collidesWith");
         let colour = self.parseColour(str, "colour");
         let filled = self.parseBoolean(str, "filled");
+        let ranges = self.parseColourRange(str, "range");
         let mut c = Ellipsis::new(
             lp.toPoint(),
             rp.toPoint(),
@@ -337,6 +350,8 @@ impl GameObjManager {
             collisionClass,
             collidesWith,
         );
+        let newColour = c.getColour().clone().setRanges(ranges);
+        c.setColour(newColour);
         c.setRotation(rotation);
         c.setVelocity(vel);
         c.setFilled(filled);
@@ -354,6 +369,7 @@ impl GameObjManager {
         let collidesWith = self.parseStrVec(str, "collidesWith");
         let colour = self.parseColour(str, "colour");
         let filled = self.parseBoolean(str, "filled");
+        let range = self.parseColourRange(str, "range");
         let mut c = Circle::new(
             centre.x,
             centre.y,
@@ -363,6 +379,8 @@ impl GameObjManager {
             collisionClass,
             collidesWith,
         );
+        let newColour = c.getColour().clone().setRanges(range);
+        c.setColour(newColour);
         c.setRotation(rotation);
         c.setFilled(filled);
         c.setVelocity(vel);
@@ -377,7 +395,6 @@ impl GameObjManager {
                 let h = self.parseFloat(map, "colour");
                 let pos = self.parseVec2(map, "position");
                 let rot: f64 = self.parseFloat(map, "rotation");
-                println!("HHHH{}", h);
                 BehaviourMap::newWithParam(vel, h as u8, pos, rot)
             }
         }
@@ -500,7 +517,8 @@ impl GameObjManager {
         let r = rng.gen_range(rRange.0..=rRange.1) as f64;
         let velX = rng.gen_range(velRangeX.0..=velRangeX.1);
         let velY = rng.gen_range(velRangeY.0..=velRangeY.1);
-        let colour = Colour::new().createRandHSVA();
+        let mut colour = Colour::new();
+        colour.createRandHSVA();
         let mut circle = Circle::new(x, y, r, colour, id, colClass, collidesWith);
         circle.setVelocity(Vector2::newI(velX, velY));
         self.addGameObj(Box::new(circle));

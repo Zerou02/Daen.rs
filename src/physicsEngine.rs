@@ -157,9 +157,6 @@ impl PhysicsEngine {
         for x in gameobjs {
             x.getColBoxMut().clearCollidedWith();
         }
-        //self.checkCollisions(&mut gameobjs);
-
-        //gameobj.moveF(0.0, self.gravity);
     }
 
     /**

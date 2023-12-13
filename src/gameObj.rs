@@ -143,7 +143,7 @@ impl GameObj {
         self.moveF(posChange.x, posChange.y);
         self.rotate(self.behaviourMap.rotation);
         self.setVelocity(self.getVelocity().add(self.behaviourMap.velocity));
-        self.colour.increaseHSVA(self.behaviourMap.h.into());
+        self.colour.increaseRange(self.behaviourMap.h.into());
     }
 
     pub fn setBehaviourMap(&mut self, map: BehaviourMap) {

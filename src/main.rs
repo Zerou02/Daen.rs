@@ -36,6 +36,8 @@ use gameObj::BehaviourMap;
 use line::Line;
 use point::Point;
 use renderer::Renderer;
+use serde_json::map::Values;
+use serde_json::Deserializer;
 use serde_json::{self, Value};
 use square::Square;
 use utils::getTime;
@@ -86,8 +88,11 @@ fn main() -> Result<(), Error> {
 
     let content = fs::read_to_string(file.to_owned() + ".json")
         .expect("Baka. Name a correct file. Or get Permission to do your stuff");
-    let test: Vec<Value> = serde_json::from_str(&content).unwrap();
-    world.gObjMM().parseConfig(test);
+    let config: Value = serde_json::from_str(&content).unwrap();
+    let objects = config.get("objects").unwrap().as_array().unwrap();
+    let redraw = config.get("redraw").unwrap().as_bool().unwrap();
+    world.redraw = redraw;
+    world.gObjMM().parseConfig(objects.to_vec());
 
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame

@@ -1,83 +1,92 @@
-[{
-    "type":"Circle",
-    "id":"circle",
-    "centre": "200, 200",
-    "radius":"10",
-    "collisionClass": "Circle",
-    "collidesWith": "Ellipse",
-    "rotation": "90",
-    "filled":true,
-    "velocity": "1,1",
-    "colour":"green",
-    "behaviours":{
-        "velocity": "0,0",
-        "position": "0,0",
-        "colour": "1",
-        "rotation":"10"
-    }
-},{
-    "type":"Circle",
-    "id":"circle2",
-    "centre": "300, 300",
-    "radius":"10",
-    "collisionClass": "Circle",
-    "collidesWith": "Circle,Ellipse",
-    "rotation": "90",
-    "filled":true,
-    "velocity": "-1,-1",
-    "colour":"green",
-    "behaviours":{
-        "velocity": "0,0",
-        "position": "0,0",
-        "colour": "1",
-        "rotation":"10"
-    }
-},
 {
-    "type":"Ellipse",
-    "id":"elli",
-    "lp":"200, 200",
-    "rp":"500, 200",
-    "filled":false,
-    "radius":"600",
-    "collisionClass":"Ellipse",
-    "rotation":"0",
-    "velocity":"0,0",
-    "colour":"red",
-    "behaviours":{
-        "colour":"1",
-        "rotation":"0"
-    }
-},{
-    "type":"Line",
-    "id":"line1",
-    "p1": "100,100",
-    "colour":"blue",
-    "p2": "200,200",
-    "behaviours":{
+  "redraw": false,
+  "objects": [
+    {
+      "type": "Circle",
+      "id": "circle",
+      "centre": "200, 200",
+      "radius": "10",
+      "collisionClass": "Circle",
+      "collidesWith": "Ellipse",
+      "rotation": "90",
+      "filled": true,
+      "velocity": "1,1",
+      "colour": "green",
+      "behaviours": {
+        "velocity": "0,0",
+        "position": "0,0",
+        "colour": "1",
         "rotation": "10"
-    }
-},{
-    "type":"Square",
-    "id":"Caree",
-    "pivot":" 400,100",
-    "w": "100",
-    "h": "100",
-    "colour":"purple",
-    "filled": true,
-    "behaviours":{
-        "colour":"0",
+      }
+    },
+    {
+      "type": "Circle",
+      "id": "circle2",
+      "centre": "300, 300",
+      "radius": "10",
+      "collisionClass": "Circle",
+      "collidesWith": "Circle,Ellipse",
+      "rotation": "90",
+      "filled": true,
+      "velocity": "-1,-1",
+      "colour": "green",
+      "behaviours": {
+        "velocity": "0,0",
+        "position": "0,0",
+        "colour": "1",
+        "rotation": "10"
+      }
+    },
+    {
+      "type": "Ellipse",
+      "id": "elli",
+      "lp": "200, 200",
+      "rp": "500, 200",
+      "filled": false,
+      "radius": "600",
+      "collisionClass": "Ellipse",
+      "rotation": "0",
+      "velocity": "0,0",
+      "colour": "red",
+      "behaviours": {
+        "colour": "1",
+        "rotation": "0"
+      }
+    },
+    {
+      "type": "Line",
+      "id": "line1",
+      "p1": "100,100",
+      "colour": "blue",
+      "p2": "200,200",
+      "behaviours": {
+        "rotation": "10"
+      }
+    },
+    {
+      "type": "Square",
+      "id": "Caree",
+      "pivot": " 400,100",
+      "w": "100",
+      "h": "100",
+      "colour": "purple",
+      "filled": true,
+      "behaviours": {
+        "colour": "0",
         "rotation": "4"
+      }
+    },
+    {
+      "type": "Triangle",
+      "p1": "300,300",
+      "p2": "400,400",
+      "p3": "200,400",
+      "colour": "brown",
+      "range": "red,blue",
+      "filled": true,
+      "behaviours": {
+        "rotation": "4"
+      }
     }
-},{
-    "type":"Triangle",
-    "p1":"300,300",
-    "p2":"400,400",
-    "p3":"200,400",
-    "colour":"brown",
-    "filled":true,
-    "behaviours":{
-        "rotation":"4"
-    }
+  ]
 }
-]

@@ -25,11 +25,12 @@ pub fn getColourVal(colourType: ColourType) -> u32 {
         _ => panic!("IMPLEMENT ME"),
     };
 }
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Colour {
     pub rgba: [u8; 4],
     pub hsva: [u8; 4],
+    pub ranges: Vec<[u8; 4]>,
+    pub currRangePtr: usize,
 }
 
 impl Colour {
@@ -37,28 +38,35 @@ impl Colour {
         return Colour {
             rgba: [0, 0, 0, 0],
             hsva: [0, 0, 0, 0],
+            ranges: vec![],
+            currRangePtr: 0,
         };
     }
 
-    pub fn createFromVal(mut self, h: u8, s: u8, v: u8, a: u8) -> Colour {
-        self.hsva = [h, s, v, a];
-        self.convertHSVAToRGBA();
+    pub fn setRanges(mut self, ranges: Vec<[u8; 4]>) -> Self {
+        self.ranges = ranges;
+        self.currRangePtr = 0;
         return self;
     }
 
-    pub fn createFromH(mut self, hue: u8) -> Colour {
+    pub fn createFromVal(&mut self, h: u8, s: u8, v: u8, a: u8) {
+        self.hsva = [h, s, v, a];
+        self.convertHSVAToRGBA();
+    }
+
+    pub fn createFromH(&mut self, hue: u8) {
         let s = 255;
         let v = 127;
         let a = 255;
         self.hsva = [hue, s, v, a];
         self.convertHSVAToRGBA();
-        return self;
     }
 
     pub fn getU8Val(&self, h: i32) -> u8 {
         return (h as f64 / 360.0 * 255.0) as u8;
     }
-    pub fn createFromString(self, str: ColourType) -> Colour {
+
+    pub fn createFromString(&mut self, str: ColourType) {
         return match str {
             ColourType::BLUE => self.createFromH(self.getU8Val(246)),
             ColourType::GREEN => self.createFromH(self.getU8Val(113)),
@@ -76,10 +84,10 @@ impl Colour {
         };
     }
 
-    pub fn createRandHSVA(self) -> Colour {
+    pub fn createRandHSVA(&mut self) {
         let rng = thread_rng();
         let h = thread_rng().gen_range(0..=255);
-        return self.createFromH(h);
+        self.createFromH(h);
     }
 
     pub fn setHSVA(mut self, val: [u8; 4]) -> Colour {
@@ -125,5 +133,43 @@ impl Colour {
         self.hsva[0] = newH as u8;
         self.convertHSVAToRGBA();
         return self;
+    }
+
+    pub fn increaseRange(&mut self, val: i32) {
+        if (self.ranges.len() == 0) {
+            self.increaseHSVA(val);
+            return;
+        }
+        let nextRange = if (self.currRangePtr == self.ranges.len() - 1) {
+            self.ranges[0].clone()
+        } else {
+            self.ranges[self.currRangePtr + 1].clone()
+        };
+        let currRange = self.ranges[self.currRangePtr].clone();
+        let mut differenceVec: [i16; 4] = [0, 0, 0, 0];
+        for i in 0..4 {
+            let difference: i16 = (nextRange[i] as i16 - currRange[i] as i16);
+            differenceVec[i] = if (difference != 0) {
+                difference / difference
+            } else {
+                0
+            };
+        }
+        let mut amountSame = 0;
+        for i in 0..4 {
+            self.hsva[i] = (differenceVec[i] + self.hsva[i] as i16) as u8;
+            if (self.hsva[i] == self.ranges[self.currRangePtr][i]) {
+                amountSame += 1;
+            }
+        }
+
+        if (amountSame == 4) {
+            self.currRangePtr = if (self.currRangePtr == self.ranges.len()) {
+                0
+            } else {
+                self.currRangePtr + 1
+            };
+        }
+        self.convertHSVAToRGBA();
     }
 }

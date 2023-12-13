@@ -11,7 +11,7 @@ pub struct World {
     pub renderer: Renderer,
     pub objectManager: GameObjManager,
     physicsEngine: PhysicsEngine,
-    count: i32,
+    pub redraw: bool,
 }
 
 impl World {
@@ -20,7 +20,7 @@ impl World {
             renderer,
             objectManager: GameObjManager::new(),
             physicsEngine: PhysicsEngine::new(),
-            count: 0,
+            redraw: true,
         }
     }
     pub fn addObj(self: &mut Self, object: Box<dyn IGameObj>) {
@@ -28,6 +28,9 @@ impl World {
     }
 
     pub fn drawAll(&mut self) {
+        if (self.redraw) {
+            self.clear();
+        }
         let start1 = getTime();
         let mut indicesToRemove: Vec<usize> = vec![];
         for x in &mut self.objectManager.gameObj {
