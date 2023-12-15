@@ -68,3 +68,13 @@ Dec 13, 2023 8:47:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notif
 INFO: Unsupported notification method: $/setTrace
 Dec 13, 2023 9:46:23 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 INFO: Unsupported notification method: $/setTrace
+2023.12.14 18:35:03 INFO  Started: Metals version 1.2.0 in folders '/home/esben/programmierung/rust/rusty-bush' for client Visual Studio Code 1.85.1.
+2023.12.14 18:35:03 WARN  Build server is not auto-connectable.
+Dec 14, 2023 6:39:48 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+Dec 14, 2023 6:41:53 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+2023.12.15 13:04:55 INFO  Started: Metals version 1.2.0 in folders '/home/esben/programmierung/rust/rusty-bush' for client Visual Studio Code 1.85.1.
+2023.12.15 13:04:55 WARN  Build server is not auto-connectable.
+Dec 15, 2023 1:21:45 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
